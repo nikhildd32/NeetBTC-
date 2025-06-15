@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bitcoin } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ThemeSwitcher } from './ThemeSwitcher';
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -79,7 +78,6 @@ export const Header = () => {
             >
               Connect Wallet
             </motion.button>
-            <ThemeSwitcher />
           </div>
         </div>
       </div>

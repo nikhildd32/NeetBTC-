@@ -284,21 +284,21 @@ export const MempoolTracker = () => {
               <StatCard
                 icon={<Users className="h-6 w-6" />}
                 title="Pending Transactions"
-                value={mempoolStats.count.toLocaleString()}
+                value={(mempoolStats?.count || 0).toLocaleString()}
                 subtitle="Waiting for confirmation"
                 color="purple"
               />
               <StatCard
                 icon={<Layers className="h-6 w-6" />}
                 title="Mempool Size"
-                value={`${(mempoolStats.vsize / 1000000).toFixed(2)} MB`}
+                value={`${((mempoolStats?.vsize || 0) / 1000000).toFixed(2)} MB`}
                 subtitle="Virtual bytes"
                 color="blue"
               />
               <StatCard
                 icon={<DollarSign className="h-6 w-6" />}
                 title="Total Fees"
-                value={`${(mempoolStats.totalFees / 100000000).toFixed(4)} BTC`}
+                value={`${((mempoolStats?.totalFees || 0) / 100000000).toFixed(4)} BTC`}
                 subtitle="Pending rewards"
                 color="green"
               />

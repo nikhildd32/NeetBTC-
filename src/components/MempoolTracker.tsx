@@ -1,9 +1,6 @@
-import React, { useEffect, useState, useRef, Suspense } from 'react';
-import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Box as ThreeBox, Sphere } from '@react-three/drei';
-import * as THREE from 'three';
 
 interface MempoolStats {
   count: number;
@@ -20,155 +17,27 @@ interface Block {
   size: number;
   weight: number;
   fees: number;
+  miner?: string;
 }
 
 interface MempoolBlock {
-  feeRate: number;
+  feeRange: string;
+  minFee: number;
+  maxFee: number;
   txCount: number;
-  position: [number, number, number];
+  totalFees: number;
+  percentage: number;
   color: string;
-  size: number;
+  estimatedTime: string;
 }
-
-// 3D Mempool Visualization Component
-const MempoolVisualization = ({ data }: { data: MempoolStats | null }) => {
-  const groupRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
-    }
-  });
-
-  if (!data?.feeHistogram) return null;
-
-  const blocks: MempoolBlock[] = data.feeHistogram.slice(0, 15).map((item, index) => {
-    const [feeRate, txCount] = item;
-    const normalizedHeight = Math.max(0.1, (txCount / Math.max(...data.feeHistogram.map(h => h[1]))) * 3);
-    
-    // Color based on fee rate
-    let color = '#7c3aed'; // purple
-    if (feeRate > 50) color = '#ef4444'; // red for high fees
-    else if (feeRate > 20) color = '#f59e0b'; // yellow for medium fees
-    else if (feeRate > 10) color = '#10b981'; // green for low fees
-
-    return {
-      feeRate,
-      txCount,
-      position: [
-        (index % 5) * 2 - 4,
-        normalizedHeight / 2,
-        Math.floor(index / 5) * 2 - 2
-      ] as [number, number, number],
-      color,
-      size: normalizedHeight
-    };
-  });
-
-  return (
-    <group ref={groupRef}>
-      {blocks.map((block, index) => (
-        <MempoolBlockComponent key={index} block={block} index={index} />
-      ))}
-      
-      {/* Base platform */}
-      <ThreeBox args={[12, 0.1, 8]} position={[0, -0.5, 0]}>
-        <meshStandardMaterial color="#1f2937" transparent opacity={0.3} />
-      </ThreeBox>
-      
-      {/* Grid lines */}
-      <gridHelper args={[12, 10, '#374151', '#374151']} position={[0, -0.45, 0]} />
-    </group>
-  );
-};
-
-const MempoolBlockComponent = ({ block, index }: { block: MempoolBlock; index: number }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.position.y = block.position[1] + Math.sin(state.clock.elapsedTime + index) * 0.05;
-      if (hovered) {
-        meshRef.current.scale.setScalar(1.1);
-      } else {
-        meshRef.current.scale.setScalar(1);
-      }
-    }
-  });
-
-  return (
-    <group>
-      <ThreeBox
-        ref={meshRef}
-        args={[1.5, block.size, 1.5]}
-        position={block.position}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
-        <meshStandardMaterial 
-          color={block.color} 
-          transparent 
-          opacity={0.8}
-          emissive={block.color}
-          emissiveIntensity={hovered ? 0.3 : 0.1}
-        />
-      </ThreeBox>
-      
-      {hovered && (
-        <Text
-          position={[block.position[0], block.position[1] + block.size + 0.5, block.position[2]]}
-          fontSize={0.3}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-        >
-          {`${block.feeRate} sat/vB\n${block.txCount} txs`}
-        </Text>
-      )}
-    </group>
-  );
-};
-
-// Floating particles effect
-const FloatingParticles = () => {
-  const particlesRef = useRef<THREE.Points>(null);
-  
-  useFrame((state) => {
-    if (particlesRef.current) {
-      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.05;
-    }
-  });
-
-  const particleCount = 100;
-  const positions = new Float32Array(particleCount * 3);
-  
-  for (let i = 0; i < particleCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = Math.random() * 10;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
-
-  return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particleCount}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial size={0.05} color="#a855f7" transparent opacity={0.6} />
-    </points>
-  );
-};
 
 export const MempoolTracker = () => {
   const [mempoolStats, setMempoolStats] = useState<MempoolStats | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<Block[]>([]);
+  const [mempoolBlocks, setMempoolBlocks] = useState<MempoolBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [nextBlock, setNextBlock] = useState<Block | null>(null);
 
   const fetchMempoolData = async () => {
     try {
@@ -187,15 +56,73 @@ export const MempoolTracker = () => {
         feeHistogram: mempoolData.fee_histogram || []
       });
 
-      setRecentBlocks(blocksData.slice(0, 6).map((block: any) => ({
+      // Process recent blocks
+      const processedBlocks = blocksData.slice(0, 6).map((block: any) => ({
         id: block.id,
         height: block.height,
         timestamp: block.timestamp,
         txCount: block.tx_count,
         size: block.size,
         weight: block.weight,
-        fees: block.extras?.totalFees || 0
-      })));
+        fees: block.extras?.totalFees || 0,
+        miner: getMinerName(block.extras?.pool?.name)
+      }));
+
+      setRecentBlocks(processedBlocks);
+
+      // Create next block simulation
+      if (mempoolData.fee_histogram && mempoolData.fee_histogram.length > 0) {
+        const topFees = mempoolData.fee_histogram
+          .sort((a: [number, number], b: [number, number]) => b[0] - a[0])
+          .slice(0, 2000); // Approximate block capacity
+
+        const totalTxs = topFees.reduce((sum: number, [, count]: [number, number]) => sum + count, 0);
+        const totalFeesNext = topFees.reduce((sum: number, [fee, count]: [number, number]) => sum + (fee * count * 140), 0); // Estimate
+
+        setNextBlock({
+          id: 'pending',
+          height: processedBlocks[0]?.height + 1 || 0,
+          timestamp: Date.now() / 1000,
+          txCount: Math.min(totalTxs, 3000),
+          size: 1400000, // ~1.4MB average
+          weight: 4000000,
+          fees: totalFeesNext / 100000000, // Convert to BTC
+          miner: 'Mining...'
+        });
+      }
+
+      // Process mempool into fee ranges
+      if (mempoolData.fee_histogram) {
+        const ranges = [
+          { min: 0, max: 5, label: '0-5', color: 'bg-green-500', time: '1+ hours' },
+          { min: 5, max: 10, label: '5-10', color: 'bg-yellow-500', time: '30-60 min' },
+          { min: 10, max: 20, label: '10-20', color: 'bg-orange-500', time: '10-30 min' },
+          { min: 20, max: 50, label: '20-50', color: 'bg-red-500', time: '5-10 min' },
+          { min: 50, max: 1000, label: '50+', color: 'bg-purple-500', time: '<5 min' }
+        ];
+
+        const processedRanges = ranges.map(range => {
+          const rangeData = mempoolData.fee_histogram.filter(
+            ([fee]: [number, number]) => fee >= range.min && fee < range.max
+          );
+          
+          const txCount = rangeData.reduce((sum: number, [, count]: [number, number]) => sum + count, 0);
+          const totalFees = rangeData.reduce((sum: number, [fee, count]: [number, number]) => sum + (fee * count * 140), 0);
+          
+          return {
+            feeRange: `${range.label} sat/vB`,
+            minFee: range.min,
+            maxFee: range.max,
+            txCount,
+            totalFees: totalFees / 100000000,
+            percentage: (txCount / mempoolData.count) * 100,
+            color: range.color,
+            estimatedTime: range.time
+          };
+        }).filter(range => range.txCount > 0);
+
+        setMempoolBlocks(processedRanges);
+      }
 
       setError(null);
     } catch (err) {
@@ -204,6 +131,19 @@ export const MempoolTracker = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getMinerName = (poolName: string) => {
+    const miners: { [key: string]: string } = {
+      'Foundry USA': 'Foundry USA',
+      'AntPool': 'AntPool',
+      'F2Pool': 'F2Pool',
+      'Binance Pool': 'Binance',
+      'ViaBTC': 'ViaBTC',
+      'Poolin': 'Poolin',
+      'SlushPool': 'SlushPool'
+    };
+    return miners[poolName] || poolName || 'Unknown';
   };
 
   useEffect(() => {
@@ -244,7 +184,7 @@ export const MempoolTracker = () => {
             Bitcoin Mempool
           </h1>
           <p className="text-xl text-gray-300 mb-8">
-            Real-time 3D visualization of unconfirmed transactions
+            Live tracking of unconfirmed transactions and recent blocks
           </p>
         </motion.div>
 
@@ -292,7 +232,6 @@ export const MempoolTracker = () => {
                 value={mempoolStats.count.toLocaleString()}
                 subtitle="Waiting for confirmation"
                 color="purple"
-                trend="+2.3%"
               />
               <StatCard
                 icon={<Layers className="h-6 w-6" />}
@@ -300,7 +239,6 @@ export const MempoolTracker = () => {
                 value={`${(mempoolStats.vsize / 1000000).toFixed(2)} MB`}
                 subtitle="Virtual bytes"
                 color="blue"
-                trend="+1.8%"
               />
               <StatCard
                 icon={<DollarSign className="h-6 w-6" />}
@@ -308,107 +246,153 @@ export const MempoolTracker = () => {
                 value={`${(mempoolStats.totalFees / 100000000).toFixed(4)} BTC`}
                 subtitle="Pending rewards"
                 color="green"
-                trend="+5.2%"
               />
               <StatCard
                 icon={<Timer className="h-6 w-6" />}
-                title="Avg Fee Rate"
-                value={`${mempoolStats.feeHistogram[0]?.[0] || 0} sat/vB`}
-                subtitle="Current priority"
+                title="Next Block ETA"
+                value="~8 min"
+                subtitle="Estimated time"
                 color="orange"
-                trend="-0.5%"
               />
             </>
           )}
         </motion.div>
 
-        {/* 3D Visualization */}
+        {/* Mempool Fee Distribution */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
           className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-2xl p-8 mb-12 backdrop-blur-md shadow-2xl"
         >
-          <div className="text-center mb-6">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
-              Live Mempool Visualization
+              Current Mempool Distribution
             </h2>
-            <p className="text-gray-400">Interactive 3D representation of transaction fee distribution</p>
+            <p className="text-gray-400">Transaction fees by priority level</p>
           </div>
-          
-          <div className="h-[500px] rounded-xl overflow-hidden bg-black/20 border border-purple-500/20">
-            <Canvas camera={{ position: [8, 6, 8], fov: 60 }}>
-              <ambientLight intensity={0.3} />
-              <pointLight position={[10, 10, 10]} intensity={1} color="#a855f7" />
-              <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
-              <spotLight position={[0, 15, 0]} angle={0.3} penumbra={1} intensity={1} color="#ffffff" />
-              
-              <Suspense fallback={null}>
-                <MempoolVisualization data={mempoolStats} />
-                <FloatingParticles />
-              </Suspense>
-              
-              <OrbitControls 
-                enablePan={false} 
-                enableZoom={true} 
-                enableRotate={true}
-                minDistance={5}
-                maxDistance={20}
-                autoRotate
-                autoRotateSpeed={0.5}
-              />
-            </Canvas>
-          </div>
-          
-          <div className="mt-6 flex justify-center space-x-8 text-sm">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded"></div>
-              <span className="text-gray-400">Low Fees (1-10 sat/vB)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-              <span className="text-gray-400">Medium Fees (10-20 sat/vB)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-orange-500 rounded"></div>
-              <span className="text-gray-400">High Fees (20-50 sat/vB)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-red-500 rounded"></div>
-              <span className="text-gray-400">Very High Fees (50+ sat/vB)</span>
-            </div>
+
+          <div className="grid md:grid-cols-5 gap-4 mb-8">
+            {mempoolBlocks.map((block, index) => (
+              <motion.div
+                key={block.feeRange}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-xl p-6 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
+              >
+                <div className="text-center">
+                  <div className={`w-full h-3 ${block.color} rounded-full mb-4 opacity-80`}></div>
+                  
+                  <div className="font-mono text-lg font-bold text-white mb-2">
+                    {block.feeRange}
+                  </div>
+                  
+                  <div className="text-sm text-gray-400 mb-3">
+                    {block.estimatedTime}
+                  </div>
+                  
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Transactions:</span>
+                      <span className="text-white font-mono">{block.txCount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Percentage:</span>
+                      <span className="text-white font-mono">{block.percentage.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Total Fees:</span>
+                      <span className="text-white font-mono">{block.totalFees.toFixed(4)} BTC</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 
-        {/* Recent Blocks Timeline */}
+        {/* Block Timeline */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
           className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-2xl p-8 backdrop-blur-md"
         >
-          <h2 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
-            Recent Blocks
-          </h2>
-          
-          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <AnimatePresence>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
+              Block Timeline
+            </h2>
+            <p className="text-gray-400">Recent blocks and next block prediction</p>
+          </div>
+
+          {/* Timeline visualization */}
+          <div className="relative">
+            {/* Timeline line */}
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 transform -translate-y-1/2"></div>
+            
+            {/* Timeline arrow */}
+            <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-2">
+              <ArrowRight className="h-6 w-6 text-purple-400" />
+            </div>
+
+            <div className="flex justify-between items-center relative z-10">
+              {/* Next Block (Pending) */}
+              {nextBlock && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl p-6 border-2 border-green-500/50 shadow-lg shadow-green-500/20 min-w-[200px]"
+                >
+                  <div className="text-center">
+                    <div className="bg-green-500/20 rounded-lg p-3 mb-3">
+                      <div className="w-6 h-6 bg-green-500 rounded animate-pulse mx-auto"></div>
+                    </div>
+                    
+                    <div className="font-mono text-lg font-bold text-green-300 mb-1">
+                      #{nextBlock.height}
+                    </div>
+                    
+                    <div className="text-xs text-green-400 mb-3 font-semibold">
+                      Mining Now...
+                    </div>
+                    
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Est. Txs:</span>
+                        <span className="text-white font-mono">{nextBlock.txCount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Est. Fees:</span>
+                        <span className="text-white font-mono">{nextBlock.fees.toFixed(3)} BTC</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Recent Blocks */}
               {recentBlocks.map((block, index) => (
                 <motion.div
                   key={block.id}
                   initial={{ opacity: 0, y: 20, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.9 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   whileHover={{ scale: 1.05, y: -5 }}
-                  className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 rounded-xl p-4 border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 cursor-pointer group"
+                  className={`rounded-xl p-4 border transition-all duration-300 cursor-pointer min-w-[180px] ${
+                    index === 0 
+                      ? 'bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/50 shadow-lg shadow-purple-500/20' 
+                      : 'bg-gradient-to-br from-gray-900/40 to-gray-800/20 border-gray-600/30 hover:border-purple-500/30'
+                  }`}
                 >
                   <div className="text-center">
-                    <div className="bg-purple-500/20 rounded-lg p-3 mb-3 group-hover:bg-purple-500/30 transition-colors">
-                      <Box className="h-6 w-6 text-purple-400 mx-auto" />
+                    <div className={`rounded-lg p-2 mb-3 ${index === 0 ? 'bg-purple-500/20' : 'bg-gray-600/20'}`}>
+                      <Box className={`h-5 w-5 mx-auto ${index === 0 ? 'text-purple-400' : 'text-gray-400'}`} />
                     </div>
                     
-                    <div className="font-mono text-lg font-bold text-purple-300 mb-1">
+                    <div className={`font-mono text-lg font-bold mb-1 ${index === 0 ? 'text-purple-300' : 'text-gray-300'}`}>
                       #{block.height}
                     </div>
                     
@@ -416,24 +400,24 @@ export const MempoolTracker = () => {
                       {getTimeAgo(block.timestamp)}
                     </div>
                     
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Txs:</span>
                         <span className="text-white font-mono">{block.txCount.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Size:</span>
-                        <span className="text-white font-mono">{(block.size / 1000000).toFixed(2)}MB</span>
+                        <span className="text-gray-500">Fees:</span>
+                        <span className="text-white font-mono">{(block.fees / 100000000).toFixed(3)} BTC</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Fees:</span>
-                        <span className="text-white font-mono">{(block.fees / 100000000).toFixed(3)}₿</span>
+                        <span className="text-gray-500">Miner:</span>
+                        <span className="text-white font-mono text-xs truncate max-w-[80px]">{block.miner}</span>
                       </div>
                     </div>
                   </div>
                 </motion.div>
               ))}
-            </AnimatePresence>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -447,10 +431,9 @@ interface StatCardProps {
   value: string;
   subtitle: string;
   color: 'purple' | 'blue' | 'green' | 'orange';
-  trend?: string;
 }
 
-const StatCard = ({ icon, title, value, subtitle, color, trend }: StatCardProps) => {
+const StatCard = ({ icon, title, value, subtitle, color }: StatCardProps) => {
   const colorClasses = {
     purple: 'from-purple-900/30 to-purple-800/10 border-purple-500/30 hover:border-purple-500/50',
     blue: 'from-blue-900/30 to-blue-800/10 border-blue-500/30 hover:border-blue-500/50',
@@ -474,11 +457,6 @@ const StatCard = ({ icon, title, value, subtitle, color, trend }: StatCardProps)
         <div className={`p-3 rounded-lg ${iconColorClasses[color]}`}>
           {icon}
         </div>
-        {trend && (
-          <div className={`text-xs px-2 py-1 rounded-full ${trend.startsWith('+') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-            {trend}
-          </div>
-        )}
       </div>
       
       <div>

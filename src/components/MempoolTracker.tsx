@@ -86,6 +86,11 @@ export const MempoolTracker = () => {
       const mempoolData = await mempoolResponse.json();
       const blocksData = await blocksResponse.json();
 
+      // Check if mempoolData is valid before accessing its properties
+      if (!mempoolData || typeof mempoolData !== 'object') {
+        throw new Error('Invalid mempool data received from API');
+      }
+
       setMempoolStats({
         count: mempoolData.count || 0,
         vsize: mempoolData.vsize || 0,

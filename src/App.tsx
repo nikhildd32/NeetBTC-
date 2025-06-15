@@ -1,0 +1,23 @@
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Header } from './components/Header';
+import { LandingPage } from './components/LandingPage';
+import { MempoolTracker } from './components/MempoolTracker';
+import { FeeEstimator } from './components/FeeEstimator';
+import { NewsAggregator } from './components/NewsAggregator';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-[#0A0118] text-white">
+      <Header />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/mempool" element={<MempoolTracker />} />
+        <Route path="/fees" element={<FeeEstimator />} />
+        <Route path="/news" element={<NewsAggregator />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;

@@ -20,21 +20,9 @@ interface Block {
   miner?: string;
 }
 
-interface MempoolBlock {
-  feeRange: string;
-  minFee: number;
-  maxFee: number;
-  txCount: number;
-  totalFees: number;
-  percentage: number;
-  color: string;
-  estimatedTime: string;
-}
-
 export const MempoolTracker = () => {
   const [mempoolStats, setMempoolStats] = useState<MempoolStats | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<Block[]>([]);
-  const [mempoolBlocks, setMempoolBlocks] = useState<MempoolBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nextBlock, setNextBlock] = useState<Block | null>(null);
@@ -89,39 +77,6 @@ export const MempoolTracker = () => {
           fees: totalFeesNext / 100000000, // Convert to BTC
           miner: 'Mining...'
         });
-      }
-
-      // Process mempool into fee ranges
-      if (mempoolData.fee_histogram) {
-        const ranges = [
-          { min: 0, max: 5, label: '0-5', color: 'bg-green-500', time: '1+ hours' },
-          { min: 5, max: 10, label: '5-10', color: 'bg-yellow-500', time: '30-60 min' },
-          { min: 10, max: 20, label: '10-20', color: 'bg-orange-500', time: '10-30 min' },
-          { min: 20, max: 50, label: '20-50', color: 'bg-red-500', time: '5-10 min' },
-          { min: 50, max: 1000, label: '50+', color: 'bg-purple-500', time: '<5 min' }
-        ];
-
-        const processedRanges = ranges.map(range => {
-          const rangeData = mempoolData.fee_histogram.filter(
-            ([fee]: [number, number]) => fee >= range.min && fee < range.max
-          );
-          
-          const txCount = rangeData.reduce((sum: number, [, count]: [number, number]) => sum + count, 0);
-          const totalFees = rangeData.reduce((sum: number, [fee, count]: [number, number]) => sum + (fee * count * 140), 0);
-          
-          return {
-            feeRange: `${range.label} sat/vB`,
-            minFee: range.min,
-            maxFee: range.max,
-            txCount,
-            totalFees: totalFees / 100000000,
-            percentage: (txCount / mempoolData.count) * 100,
-            color: range.color,
-            estimatedTime: range.time
-          };
-        }).filter(range => range.txCount > 0);
-
-        setMempoolBlocks(processedRanges);
       }
 
       setError(null);
@@ -258,66 +213,11 @@ export const MempoolTracker = () => {
           )}
         </motion.div>
 
-        {/* Mempool Fee Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-2xl p-8 mb-12 backdrop-blur-md shadow-2xl"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
-              Current Mempool Distribution
-            </h2>
-            <p className="text-gray-400">Transaction fees by priority level</p>
-          </div>
-
-          <div className="grid md:grid-cols-5 gap-4 mb-8">
-            {mempoolBlocks.map((block, index) => (
-              <motion.div
-                key={block.feeRange}
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-xl p-6 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
-              >
-                <div className="text-center">
-                  <div className={`w-full h-3 ${block.color} rounded-full mb-4 opacity-80`}></div>
-                  
-                  <div className="font-mono text-lg font-bold text-white mb-2">
-                    {block.feeRange}
-                  </div>
-                  
-                  <div className="text-sm text-gray-400 mb-3">
-                    {block.estimatedTime}
-                  </div>
-                  
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Transactions:</span>
-                      <span className="text-white font-mono">{block.txCount.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Percentage:</span>
-                      <span className="text-white font-mono">{block.percentage.toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Total Fees:</span>
-                      <span className="text-white font-mono">{block.totalFees.toFixed(4)} BTC</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
         {/* Block Timeline */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
           className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-2xl p-8 backdrop-blur-md"
         >
           <div className="text-center mb-8">

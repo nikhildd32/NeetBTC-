@@ -213,12 +213,12 @@ export const MempoolTracker = () => {
           )}
         </motion.div>
 
-        {/* Block Timeline */}
+        {/* Block Timeline - Centered without container */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-2xl p-8 backdrop-blur-md"
+          className="mb-12"
         >
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
@@ -227,87 +227,89 @@ export const MempoolTracker = () => {
             <p className="text-gray-400">Recent blocks and next block prediction</p>
           </div>
 
-          {/* Timeline visualization without the line */}
-          <div className="flex justify-between items-center gap-4 overflow-x-auto">
-            {/* Next Block (Pending) */}
-            {nextBlock && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl p-6 border-2 border-green-500/50 shadow-lg shadow-green-500/20 min-w-[200px] flex-shrink-0"
-              >
-                <div className="text-center">
-                  <div className="bg-green-500/20 rounded-lg p-3 mb-3">
-                    <div className="w-6 h-6 bg-green-500 rounded animate-pulse mx-auto"></div>
-                  </div>
-                  
-                  <div className="font-mono text-lg font-bold text-green-300 mb-1">
-                    #{nextBlock.height}
-                  </div>
-                  
-                  <div className="text-xs text-green-400 mb-3 font-semibold">
-                    Mining Now...
-                  </div>
-                  
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Est. Txs:</span>
-                      <span className="text-white font-mono">{nextBlock.txCount.toLocaleString()}</span>
+          {/* Blocks without container - hidden scrollbar */}
+          <div className="flex justify-center">
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide max-w-full px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {/* Next Block (Pending) */}
+              {nextBlock && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-gradient-to-br from-green-900/40 to-green-800/20 rounded-xl p-6 border-2 border-green-500/50 shadow-lg shadow-green-500/20 min-w-[200px] flex-shrink-0"
+                >
+                  <div className="text-center">
+                    <div className="bg-green-500/20 rounded-lg p-3 mb-3">
+                      <div className="w-6 h-6 bg-green-500 rounded animate-pulse mx-auto"></div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Est. Fees:</span>
-                      <span className="text-white font-mono">{nextBlock.fees.toFixed(3)} BTC</span>
+                    
+                    <div className="font-mono text-lg font-bold text-green-300 mb-1">
+                      #{nextBlock.height}
+                    </div>
+                    
+                    <div className="text-xs text-green-400 mb-3 font-semibold">
+                      Mining Now...
+                    </div>
+                    
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Est. Txs:</span>
+                        <span className="text-white font-mono">{nextBlock.txCount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Est. Fees:</span>
+                        <span className="text-white font-mono">{nextBlock.fees.toFixed(3)} BTC</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            {/* Recent Blocks */}
-            {recentBlocks.map((block, index) => (
-              <motion.div
-                key={block.id}
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className={`rounded-xl p-4 border transition-all duration-300 cursor-pointer min-w-[180px] flex-shrink-0 ${
-                  index === 0 
-                    ? 'bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/50 shadow-lg shadow-purple-500/20' 
-                    : 'bg-gradient-to-br from-gray-900/40 to-gray-800/20 border-gray-600/30 hover:border-purple-500/30'
-                }`}
-              >
-                <div className="text-center">
-                  <div className={`rounded-lg p-2 mb-3 ${index === 0 ? 'bg-purple-500/20' : 'bg-gray-600/20'}`}>
-                    <Box className={`h-5 w-5 mx-auto ${index === 0 ? 'text-purple-400' : 'text-gray-400'}`} />
-                  </div>
-                  
-                  <div className={`font-mono text-lg font-bold mb-1 ${index === 0 ? 'text-purple-300' : 'text-gray-300'}`}>
-                    #{block.height}
-                  </div>
-                  
-                  <div className="text-xs text-gray-400 mb-3">
-                    {getTimeAgo(block.timestamp)}
-                  </div>
-                  
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Txs:</span>
-                      <span className="text-white font-mono">{block.txCount.toLocaleString()}</span>
+              {/* Recent Blocks */}
+              {recentBlocks.map((block, index) => (
+                <motion.div
+                  key={block.id}
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className={`rounded-xl p-4 border transition-all duration-300 cursor-pointer min-w-[180px] flex-shrink-0 ${
+                    index === 0 
+                      ? 'bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/50 shadow-lg shadow-purple-500/20' 
+                      : 'bg-gradient-to-br from-gray-900/40 to-gray-800/20 border-gray-600/30 hover:border-purple-500/30'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className={`rounded-lg p-2 mb-3 ${index === 0 ? 'bg-purple-500/20' : 'bg-gray-600/20'}`}>
+                      <Box className={`h-5 w-5 mx-auto ${index === 0 ? 'text-purple-400' : 'text-gray-400'}`} />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Fees:</span>
-                      <span className="text-white font-mono">{(block.fees / 100000000).toFixed(3)} BTC</span>
+                    
+                    <div className={`font-mono text-lg font-bold mb-1 ${index === 0 ? 'text-purple-300' : 'text-gray-300'}`}>
+                      #{block.height}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Miner:</span>
-                      <span className="text-white font-mono text-xs truncate max-w-[80px]">{block.miner}</span>
+                    
+                    <div className="text-xs text-gray-400 mb-3">
+                      {getTimeAgo(block.timestamp)}
+                    </div>
+                    
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Txs:</span>
+                        <span className="text-white font-mono">{block.txCount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Fees:</span>
+                        <span className="text-white font-mono">{(block.fees / 100000000).toFixed(3)} BTC</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Miner:</span>
+                        <span className="text-white font-mono text-xs truncate max-w-[80px]">{block.miner}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

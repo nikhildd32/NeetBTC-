@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign } from 'lucide-react';
+import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MempoolStats {
@@ -20,12 +20,61 @@ interface Block {
   miner?: string;
 }
 
+interface BlockDetails {
+  id: string;
+  height: number;
+  version: number;
+  timestamp: number;
+  tx_count: number;
+  size: number;
+  weight: number;
+  merkle_root: string;
+  previousblockhash: string;
+  mediantime: number;
+  nonce: number;
+  bits: number;
+  difficulty: number;
+  chainwork: string;
+  nTx: number;
+  extras: {
+    coinbaseRaw: string;
+    orphans: any[];
+    feeRange: number[];
+    totalFees: number;
+    avgFee: number;
+    avgFeeRate: number;
+    utxoSetChange: number;
+    avgTxSize: number;
+    totalInputs: number;
+    totalOutputs: number;
+    totalOutputAmt: number;
+    segwitTotalTxs: number;
+    segwitTotalSize: number;
+    segwitTotalWeight: number;
+    header: string;
+    utxoSetSize: number;
+    totalInputAmt: number;
+    virtualSize: number;
+    orphan: boolean;
+    pool: {
+      id: number;
+      name: string;
+      link: string;
+      blockCount: number;
+      slug: string;
+    };
+  };
+}
+
 export const MempoolTracker = () => {
   const [mempoolStats, setMempoolStats] = useState<MempoolStats | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<Block[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nextBlock, setNextBlock] = useState<Block | null>(null);
+  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+  const [blockDetails, setBlockDetails] = useState<BlockDetails | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const fetchMempoolData = async () => {
     try {
@@ -88,6 +137,30 @@ export const MempoolTracker = () => {
     }
   };
 
+  const fetchBlockDetails = async (blockHash: string) => {
+    setLoadingDetails(true);
+    try {
+      const response = await fetch(`https://mempool.space/api/block/${blockHash}`);
+      const details = await response.json();
+      setBlockDetails(details);
+    } catch (err) {
+      console.error('Error fetching block details:', err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleBlockClick = (block: Block) => {
+    if (block.id === 'pending') return; // Don't show details for pending block
+    setSelectedBlock(block);
+    fetchBlockDetails(block.id);
+  };
+
+  const closeModal = () => {
+    setSelectedBlock(null);
+    setBlockDetails(null);
+  };
+
   const getMinerName = (poolName: string) => {
     const miners: { [key: string]: string } = {
       'Foundry USA': 'Foundry USA',
@@ -118,6 +191,25 @@ export const MempoolTracker = () => {
     if (diff < 60) return `${Math.floor(diff)} seconds ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
     return `${Math.floor(diff / 3600)} hours ago`;
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDifficulty = (difficulty: number) => {
+    if (difficulty >= 1e12) {
+      return (difficulty / 1e12).toFixed(2) + 'T';
+    } else if (difficulty >= 1e9) {
+      return (difficulty / 1e9).toFixed(2) + 'B';
+    } else if (difficulty >= 1e6) {
+      return (difficulty / 1e6).toFixed(2) + 'M';
+    }
+    return difficulty.toLocaleString();
   };
 
   return (
@@ -213,21 +305,13 @@ export const MempoolTracker = () => {
           )}
         </motion.div>
 
-        {/* Block Timeline - Centered without container */}
+        {/* Blocks without container - hidden scrollbar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mb-12"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-purple-600 text-transparent bg-clip-text">
-              Block Timeline
-            </h2>
-            <p className="text-gray-400">Recent blocks and next block prediction</p>
-          </div>
-
-          {/* Blocks without container - hidden scrollbar */}
           <div className="flex justify-center">
             <div className="flex gap-4 overflow-x-auto scrollbar-hide max-w-full px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {/* Next Block (Pending) */}
@@ -273,6 +357,7 @@ export const MempoolTracker = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   whileHover={{ scale: 1.05, y: -5 }}
+                  onClick={() => handleBlockClick(block)}
                   className={`rounded-xl p-4 border transition-all duration-300 cursor-pointer min-w-[180px] flex-shrink-0 ${
                     index === 0 
                       ? 'bg-gradient-to-br from-purple-900/40 to-purple-800/20 border-purple-500/50 shadow-lg shadow-purple-500/20' 
@@ -313,6 +398,166 @@ export const MempoolTracker = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Block Details Modal */}
+      <AnimatePresence>
+        {selectedBlock && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gradient-to-br from-purple-900/90 to-purple-800/80 border border-purple-500/30 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto backdrop-blur-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-2">Block #{selectedBlock.height}</h2>
+                  <p className="text-purple-300">{getTimeAgo(selectedBlock.timestamp)}</p>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="p-2 hover:bg-purple-800/50 rounded-lg transition-colors"
+                >
+                  <X className="h-6 w-6 text-gray-400" />
+                </button>
+              </div>
+
+              {loadingDetails ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                </div>
+              ) : blockDetails ? (
+                <div className="space-y-6">
+                  {/* Basic Info */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-purple-900/30 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Hash className="h-4 w-4 text-purple-400" />
+                        <span className="text-sm text-gray-400">Block Hash</span>
+                      </div>
+                      <p className="font-mono text-sm text-white break-all">{blockDetails.id}</p>
+                    </div>
+                    
+                    <div className="bg-purple-900/30 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="h-4 w-4 text-purple-400" />
+                        <span className="text-sm text-gray-400">Timestamp</span>
+                      </div>
+                      <p className="text-white">{new Date(blockDetails.timestamp * 1000).toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {/* Stats Grid */}
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="bg-purple-900/30 rounded-lg p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Activity className="h-4 w-4 text-green-400" />
+                        <span className="text-sm text-gray-400">Transactions</span>
+                      </div>
+                      <p className="text-2xl font-bold text-white">{blockDetails.tx_count.toLocaleString()}</p>
+                    </div>
+                    
+                    <div className="bg-purple-900/30 rounded-lg p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <HardDrive className="h-4 w-4 text-blue-400" />
+                        <span className="text-sm text-gray-400">Size</span>
+                      </div>
+                      <p className="text-2xl font-bold text-white">{formatBytes(blockDetails.size)}</p>
+                    </div>
+                    
+                    <div className="bg-purple-900/30 rounded-lg p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <DollarSign className="h-4 w-4 text-yellow-400" />
+                        <span className="text-sm text-gray-400">Total Fees</span>
+                      </div>
+                      <p className="text-2xl font-bold text-white">{(blockDetails.extras.totalFees / 100000000).toFixed(4)} BTC</p>
+                    </div>
+                  </div>
+
+                  {/* Technical Details */}
+                  <div className="bg-purple-900/30 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                      <Cpu className="h-5 w-5 text-purple-400" />
+                      Technical Details
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-400">Difficulty:</span>
+                        <p className="text-white font-mono">{formatDifficulty(blockDetails.difficulty)}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Weight:</span>
+                        <p className="text-white font-mono">{blockDetails.weight.toLocaleString()} WU</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Nonce:</span>
+                        <p className="text-white font-mono">{blockDetails.nonce.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Version:</span>
+                        <p className="text-white font-mono">{blockDetails.version}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Avg Fee Rate:</span>
+                        <p className="text-white font-mono">{blockDetails.extras.avgFeeRate.toFixed(2)} sat/vB</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Avg Tx Size:</span>
+                        <p className="text-white font-mono">{blockDetails.extras.avgTxSize.toFixed(0)} bytes</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Miner Info */}
+                  {blockDetails.extras.pool && (
+                    <div className="bg-purple-900/30 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-white mb-2">Mining Pool</h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-medium">{blockDetails.extras.pool.name}</span>
+                        {blockDetails.extras.pool.link && (
+                          <a
+                            href={blockDetails.extras.pool.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            Visit
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* View on Explorer */}
+                  <div className="flex justify-center pt-4">
+                    <a
+                      href={`https://mempool.space/block/${selectedBlock.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl hover:from-purple-700 hover:to-purple-900 transition-all duration-300 text-white font-medium"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      View on Mempool.space
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-400">Failed to load block details</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

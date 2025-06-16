@@ -36,27 +36,27 @@ interface BlockDetails {
   difficulty: number;
   chainwork: string;
   nTx: number;
-  extras: {
-    coinbaseRaw: string;
-    orphans: any[];
-    feeRange: number[];
-    totalFees: number;
-    avgFee: number;
-    avgFeeRate: number;
-    utxoSetChange: number;
-    avgTxSize: number;
-    totalInputs: number;
-    totalOutputs: number;
-    totalOutputAmt: number;
-    segwitTotalTxs: number;
-    segwitTotalSize: number;
-    segwitTotalWeight: number;
-    header: string;
-    utxoSetSize: number;
-    totalInputAmt: number;
-    virtualSize: number;
-    orphan: boolean;
-    pool: {
+  extras?: {
+    coinbaseRaw?: string;
+    orphans?: any[];
+    feeRange?: number[];
+    totalFees?: number;
+    avgFee?: number;
+    avgFeeRate?: number;
+    utxoSetChange?: number;
+    avgTxSize?: number;
+    totalInputs?: number;
+    totalOutputs?: number;
+    totalOutputAmt?: number;
+    segwitTotalTxs?: number;
+    segwitTotalSize?: number;
+    segwitTotalWeight?: number;
+    header?: string;
+    utxoSetSize?: number;
+    totalInputAmt?: number;
+    virtualSize?: number;
+    orphan?: boolean;
+    pool?: {
       id: number;
       name: string;
       link: string;
@@ -490,7 +490,7 @@ export const MempoolTracker = () => {
                         <DollarSign className="h-4 w-4 text-yellow-400" />
                         <span className="text-sm text-gray-400">Total Fees</span>
                       </div>
-                      <p className="text-2xl font-bold text-white">{(blockDetails.extras.totalFees / 100000000).toFixed(4)} BTC</p>
+                      <p className="text-2xl font-bold text-white">{((blockDetails.extras?.totalFees || 0) / 100000000).toFixed(4)} BTC</p>
                     </div>
                   </div>
 
@@ -519,17 +519,17 @@ export const MempoolTracker = () => {
                       </div>
                       <div>
                         <span className="text-gray-400">Avg Fee Rate:</span>
-                        <p className="text-white font-mono">{blockDetails.extras.avgFeeRate.toFixed(2)} sat/vB</p>
+                        <p className="text-white font-mono">{(blockDetails.extras?.avgFeeRate || 0).toFixed(2)} sat/vB</p>
                       </div>
                       <div>
                         <span className="text-gray-400">Avg Tx Size:</span>
-                        <p className="text-white font-mono">{blockDetails.extras.avgTxSize.toFixed(0)} bytes</p>
+                        <p className="text-white font-mono">{(blockDetails.extras?.avgTxSize || 0).toFixed(0)} bytes</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Miner Info */}
-                  {blockDetails.extras.pool && (
+                  {blockDetails.extras?.pool && (
                     <div className="bg-purple-900/30 rounded-lg p-4">
                       <h3 className="text-lg font-semibold text-white mb-2">Mining Pool</h3>
                       <div className="flex items-center justify-between">

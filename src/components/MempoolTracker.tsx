@@ -88,6 +88,12 @@ export const MempoolTracker = () => {
     try {
       // Fetch 30-day historical data from mempool.space
       const response = await fetch('https://mempool.space/api/v1/statistics/30d');
+      
+      // Check if the response is successful before parsing as JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       
       if (data && Array.isArray(data)) {

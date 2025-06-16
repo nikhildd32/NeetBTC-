@@ -67,12 +67,7 @@ interface BlockDetails {
 }
 
 export const MempoolTracker = () => {
-  const [mempoolStats, setMempoolStats] = useState<MempoolStats>({
-    count: 0,
-    vsize: 0,
-    totalFees: 0,
-    feeHistogram: []
-  });
+  const [mempoolStats, setMempoolStats] = useState<MempoolStats | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<Block[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -249,7 +244,7 @@ export const MempoolTracker = () => {
           <div className="flex items-center space-x-4">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             <p className="text-sm text-gray-400">
-              {(mempoolStats?.count || 0) > 0 ? `Live • Updated ${new Date().toLocaleTimeString()}` : 'Connecting...'}
+              {mempoolStats?.count ? `Live • Updated ${new Date().toLocaleTimeString()}` : 'Connecting...'}
             </p>
           </div>
           <motion.button
@@ -275,7 +270,7 @@ export const MempoolTracker = () => {
         )}
 
         {/* Loading State */}
-        {loading && (mempoolStats?.count || 0) === 0 && (
+        {loading && !mempoolStats && (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
           </div>
@@ -294,21 +289,21 @@ export const MempoolTracker = () => {
               <StatCard
                 icon={<Users className="h-6 w-6" />}
                 title="Pending Transactions"
-                value={(mempoolStats?.count || 0).toLocaleString()}
+                value={mempoolStats.count.toLocaleString()}
                 subtitle="Waiting for confirmation"
                 color="purple"
               />
               <StatCard
                 icon={<Layers className="h-6 w-6" />}
                 title="Mempool Size"
-                value={`${((mempoolStats?.vsize || 0) / 1000000).toFixed(2)} MB`}
+                value={`${(mempoolStats.vsize / 1000000).toFixed(2)} MB`}
                 subtitle="Virtual bytes"
                 color="blue"
               />
               <StatCard
                 icon={<DollarSign className="h-6 w-6" />}
                 title="Total Fees"
-                value={`${((mempoolStats?.totalFees || 0) / 100000000).toFixed(4)} BTC`}
+                value={`${(mempoolStats.totalFees / 100000000).toFixed(4)} BTC`}
                 subtitle="Pending rewards"
                 color="green"
               />

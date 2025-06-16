@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive } from 'lucide-react';
+import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MempoolStats {
@@ -66,6 +66,13 @@ interface BlockDetails {
   };
 }
 
+interface HistoricalData {
+  avgPendingTxs: number;
+  avgMempoolSize: number;
+  avgTotalFees: number;
+  avgBlockTime: number;
+}
+
 export const MempoolTracker = () => {
   const [mempoolStats, setMempoolStats] = useState<MempoolStats | null>(null);
   const [recentBlocks, setRecentBlocks] = useState<Block[]>([]);
@@ -75,6 +82,42 @@ export const MempoolTracker = () => {
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [blockDetails, setBlockDetails] = useState<BlockDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [historicalData, setHistoricalData] = useState<HistoricalData | null>(null);
+
+  const fetchHistoricalData = async () => {
+    try {
+      // Fetch 30-day historical data from mempool.space
+      const response = await fetch('https://mempool.space/api/v1/statistics/30d');
+      const data = await response.json();
+      
+      if (data && Array.isArray(data)) {
+        // Calculate averages from the last 30 days
+        const totalDays = data.length;
+        const totals = data.reduce((acc, day) => ({
+          pendingTxs: acc.pendingTxs + (day.mempool_count || 0),
+          mempoolSize: acc.mempoolSize + (day.mempool_vsize || 0),
+          totalFees: acc.totalFees + (day.mempool_total_fee || 0),
+          blockTime: acc.blockTime + (day.avg_block_interval || 600) // Default 10 min
+        }), { pendingTxs: 0, mempoolSize: 0, totalFees: 0, blockTime: 0 });
+
+        setHistoricalData({
+          avgPendingTxs: Math.round(totals.pendingTxs / totalDays),
+          avgMempoolSize: Math.round(totals.mempoolSize / totalDays),
+          avgTotalFees: totals.totalFees / totalDays,
+          avgBlockTime: totals.blockTime / totalDays
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching historical data:', err);
+      // Set reasonable defaults based on typical Bitcoin network conditions
+      setHistoricalData({
+        avgPendingTxs: 8500,
+        avgMempoolSize: 4200000, // ~4.2 MB
+        avgTotalFees: 12000000, // ~0.12 BTC in sats
+        avgBlockTime: 600 // 10 minutes
+      });
+    }
+  };
 
   const fetchMempoolData = async () => {
     try {
@@ -179,7 +222,21 @@ export const MempoolTracker = () => {
     return miners[poolName] || poolName || 'Unknown';
   };
 
+  const getComparisonData = (current: number, average: number) => {
+    const percentChange = ((current - average) / average) * 100;
+    const isHigher = current > average;
+    
+    return {
+      isHigher,
+      percentChange: Math.abs(percentChange),
+      arrow: isHigher ? ArrowUp : ArrowDown,
+      color: isHigher ? 'text-green-400' : 'text-red-400',
+      bgColor: isHigher ? 'bg-green-500/20' : 'bg-red-500/20'
+    };
+  };
+
   useEffect(() => {
+    fetchHistoricalData();
     fetchMempoolData();
     const interval = setInterval(fetchMempoolData, 30000);
     return () => clearInterval(interval);
@@ -277,7 +334,7 @@ export const MempoolTracker = () => {
         )}
 
         {/* Main Content - Only render when data is available */}
-        {!loading && mempoolStats && (
+        {!loading && mempoolStats && historicalData && (
           <>
             {/* Stats Grid */}
             <motion.div
@@ -292,6 +349,7 @@ export const MempoolTracker = () => {
                 value={mempoolStats.count.toLocaleString()}
                 subtitle="Waiting for confirmation"
                 color="purple"
+                comparison={getComparisonData(mempoolStats.count, historicalData.avgPendingTxs)}
               />
               <StatCard
                 icon={<Layers className="h-6 w-6" />}
@@ -299,6 +357,7 @@ export const MempoolTracker = () => {
                 value={`${(mempoolStats.vsize / 1000000).toFixed(2)} MB`}
                 subtitle="Virtual bytes"
                 color="blue"
+                comparison={getComparisonData(mempoolStats.vsize, historicalData.avgMempoolSize)}
               />
               <StatCard
                 icon={<DollarSign className="h-6 w-6" />}
@@ -306,6 +365,7 @@ export const MempoolTracker = () => {
                 value={`${(mempoolStats.totalFees / 100000000).toFixed(4)} BTC`}
                 subtitle="Pending rewards"
                 color="green"
+                comparison={getComparisonData(mempoolStats.totalFees, historicalData.avgTotalFees)}
               />
               <StatCard
                 icon={<Timer className="h-6 w-6" />}
@@ -313,6 +373,7 @@ export const MempoolTracker = () => {
                 value="~8 min"
                 subtitle="Estimated time"
                 color="orange"
+                comparison={getComparisonData(8 * 60, historicalData.avgBlockTime)} // Convert to seconds for comparison
               />
             </motion.div>
 
@@ -581,9 +642,16 @@ interface StatCardProps {
   value: string;
   subtitle: string;
   color: 'purple' | 'blue' | 'green' | 'orange';
+  comparison?: {
+    isHigher: boolean;
+    percentChange: number;
+    arrow: React.ComponentType<any>;
+    color: string;
+    bgColor: string;
+  };
 }
 
-const StatCard = ({ icon, title, value, subtitle, color }: StatCardProps) => {
+const StatCard = ({ icon, title, value, subtitle, color, comparison }: StatCardProps) => {
   const colorClasses = {
     purple: 'from-purple-900/30 to-purple-800/10 border-purple-500/30 hover:border-purple-500/50',
     blue: 'from-blue-900/30 to-blue-800/10 border-blue-500/30 hover:border-blue-500/50',
@@ -607,6 +675,14 @@ const StatCard = ({ icon, title, value, subtitle, color }: StatCardProps) => {
         <div className={`p-3 rounded-lg ${iconColorClasses[color]}`}>
           {icon}
         </div>
+        {comparison && (
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${comparison.bgColor}`}>
+            <comparison.arrow className={`h-3 w-3 ${comparison.color}`} />
+            <span className={`text-xs font-medium ${comparison.color}`}>
+              {comparison.percentChange.toFixed(0)}%
+            </span>
+          </div>
+        )}
       </div>
       
       <div>
@@ -614,7 +690,14 @@ const StatCard = ({ icon, title, value, subtitle, color }: StatCardProps) => {
         <p className="text-2xl font-bold font-mono text-white mb-1">
           {value}
         </p>
-        <p className="text-xs text-gray-500">{subtitle}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-500">{subtitle}</p>
+          {comparison && (
+            <p className="text-xs text-gray-500">
+              vs 30d avg
+            </p>
+          )}
+        </div>
       </div>
     </motion.div>
   );

@@ -202,28 +202,6 @@ export const LandingPage = () => {
             />
           </motion.div>
         </motion.div>
-
-        {/* Enhanced Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          animate={{ 
-            y: [0, 15, 0],
-            opacity: [0.5, 1, 0.5]
-          }}
-          transition={{ 
-            duration: 2, 
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <motion.div
-            className="flex flex-col items-center gap-2"
-            whileHover={{ scale: 1.1 }}
-          >
-            <span className="text-purple-400 text-sm font-medium">Scroll to explore</span>
-            <ChevronDown className="h-6 w-6 text-purple-400" />
-          </motion.div>
-        </motion.div>
       </div>
 
       {/* Why Section with matching format */}

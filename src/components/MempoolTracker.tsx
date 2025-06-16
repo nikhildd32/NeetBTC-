@@ -390,7 +390,7 @@ export const MempoolTracker = () => {
                 icon={<DollarSign className="h-6 w-6" />}
                 title="Total Fees"
                 value={`${(mempoolStats.totalFees / 100000000).toFixed(4)} BTC`}
-                subtitle="Pending rewards"
+                subtitle="Available to miners"
                 color="green"
                 comparison={getComparisonData(mempoolStats.totalFees, historicalData.avgTotalFees)}
               />

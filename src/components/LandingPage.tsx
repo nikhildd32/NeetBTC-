@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
+import { Activity, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -57,17 +57,23 @@ export const LandingPage = () => {
     }
   };
 
-  const floatingVariants = {
-    animate: {
-      y: [-10, 10, -10],
-      rotate: [-1, 1, -1],
-      transition: {
-        duration: 6,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  };
+  // Bitcoin logo SVG component
+  const BitcoinLogo = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={`text-orange-500 ${className}`}
+    >
+      <circle cx="16" cy="16" r="16" fill="currentColor"/>
+      <path
+        d="M23.189 14.02c.314-2.096-1.283-3.223-3.465-3.975l.708-2.84-1.728-.43-.69 2.765c-.454-.113-.92-.22-1.385-.326l.695-2.783L15.596 6l-.708 2.839c-.376-.086-.746-.17-1.104-.26l.002-.009-2.384-.595-.46 1.846s1.283.294 1.256.312c.7.175.826.638.805 1.006l-.806 3.235c.048.012.11.03.18.057l-.181-.045-1.13 4.532c-.086.212-.303.531-.793.41.018.025-1.256-.313-1.256-.313L8.556 19.83l2.25.561c.418.105.828.215 1.231.318l-.715 2.872 1.727.43.708-2.84c.472.127.93.245 1.378.357l-.706 2.828 1.728.43.715-2.866c2.948.558 5.164.333 6.097-2.333.752-2.146-.037-3.385-1.588-4.192 1.13-.26 1.98-1.003 2.207-2.538zm-3.95 5.538c-.533 2.147-4.148.986-5.32.695l.95-3.805c1.172.293 4.929.874 4.37 3.11zm.535-5.569c-.487 1.953-3.495.96-4.47.717l.86-3.45c.975.243 4.118.696 3.61 2.733z"
+        fill="white"
+      />
+    </svg>
+  );
 
   return (
     <div className="min-h-screen bg-[#0A0118] overflow-hidden">
@@ -84,6 +90,32 @@ export const LandingPage = () => {
             className="absolute w-[800px] h-[800px] bg-gradient-to-l from-purple-900/20 via-purple-600/10 to-transparent rounded-full blur-3xl -bottom-64 -right-64"
           />
           
+          {/* Floating Bitcoin logos */}
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute"
+              style={{
+                left: `${10 + (i * 12)}%`,
+                top: `${20 + (i % 3) * 25}%`,
+              }}
+              animate={{
+                y: [-20, 20, -20],
+                x: [-10, 10, -10],
+                rotate: [0, 360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 8 + Math.random() * 4,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+                ease: "easeInOut"
+              }}
+            >
+              <BitcoinLogo size={16 + Math.random() * 16} className="opacity-20" />
+            </motion.div>
+          ))}
+
           {/* Floating particles */}
           {[...Array(20)].map((_, i) => (
             <motion.div
@@ -105,6 +137,30 @@ export const LandingPage = () => {
                 ease: "easeInOut"
               }}
             />
+          ))}
+
+          {/* Large floating Bitcoin logos in background */}
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={`large-${i}`}
+              className="absolute opacity-5"
+              style={{
+                left: `${20 + (i * 30)}%`,
+                top: `${30 + (i * 20)}%`,
+              }}
+              animate={{
+                y: [-30, 30, -30],
+                rotate: [0, 180, 360],
+                scale: [0.8, 1.2, 0.8],
+              }}
+              transition={{
+                duration: 12 + i * 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <BitcoinLogo size={80 + i * 20} />
+            </motion.div>
           ))}
         </div>
 
@@ -187,7 +243,7 @@ export const LandingPage = () => {
               delay={0}
             />
             <QuickAccessButton
-              icon={<Bitcoin className="h-8 w-8" />}
+              icon={<BitcoinLogo size={32} />}
               title="Fees"
               description="Smart fee estimation"
               onClick={() => navigate('/fees')}

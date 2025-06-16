@@ -86,10 +86,9 @@ export const MempoolTracker = () => {
 
   const fetchHistoricalData = async () => {
     try {
-      // Fetch 1-month historical data from mempool.space
+      // Fetch last 30 days of statistics from mempool.space
       const response = await fetch('https://mempool.space/api/v1/statistics/1m');
       
-      // Check if the response is successful before parsing as JSON
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -97,26 +96,27 @@ export const MempoolTracker = () => {
       const data = await response.json();
       
       if (data && Array.isArray(data) && data.length > 0) {
-        // Calculate averages from the last month
-        const validData = data.filter(day => day && typeof day === 'object');
-        const totalDays = validData.length;
+        // Take last 30 days of data
+        const last30Days = data.slice(-30);
         
-        if (totalDays > 0) {
-          const totals = validData.reduce((acc, day) => ({
-            pendingTxs: acc.pendingTxs + (day.mempool_count || 0),
-            mempoolSize: acc.mempoolSize + (day.mempool_vsize || 0),
-            totalFees: acc.totalFees + (day.mempool_total_fee || 0),
-            blockTime: acc.blockTime + (day.avg_block_interval || 600) // Default 10 min
-          }), { pendingTxs: 0, mempoolSize: 0, totalFees: 0, blockTime: 0 });
+        // Calculate averages
+        const totals = last30Days.reduce((acc, day) => ({
+          pendingTxs: acc.pendingTxs + (day.mempool_count || 0),
+          mempoolSize: acc.mempoolSize + (day.mempool_vsize || 0),
+          totalFees: acc.totalFees + (day.mempool_total_fee || 0),
+          blockTime: acc.blockTime + (day.avg_block_interval || 600)
+        }), { pendingTxs: 0, mempoolSize: 0, totalFees: 0, blockTime: 0 });
 
-          setHistoricalData({
-            avgPendingTxs: Math.max(Math.round(totals.pendingTxs / totalDays), 1), // Ensure minimum 1
-            avgMempoolSize: Math.max(Math.round(totals.mempoolSize / totalDays), 1000000), // Ensure minimum 1MB
-            avgTotalFees: Math.max(totals.totalFees / totalDays, 1000000), // Ensure minimum 0.01 BTC in sats
-            avgBlockTime: Math.max(totals.blockTime / totalDays, 300) // Ensure minimum 5 minutes
-          });
-          return;
-        }
+        const avgData = {
+          avgPendingTxs: Math.round(totals.pendingTxs / last30Days.length),
+          avgMempoolSize: Math.round(totals.mempoolSize / last30Days.length),
+          avgTotalFees: totals.totalFees / last30Days.length,
+          avgBlockTime: totals.blockTime / last30Days.length
+        };
+
+        setHistoricalData(avgData);
+        console.log('Historical averages calculated:', avgData);
+        return;
       }
       
       throw new Error('No valid historical data received');
@@ -238,7 +238,7 @@ export const MempoolTracker = () => {
   const getComparisonData = (current: number, average: number) => {
     // Ensure both values are valid numbers and average is not zero
     if (!current || !average || average === 0 || !isFinite(current) || !isFinite(average)) {
-      return null; // Return null if invalid data
+      return null;
     }
     
     const percentChange = ((current - average) / average) * 100;

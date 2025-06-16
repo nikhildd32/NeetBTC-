@@ -86,8 +86,8 @@ export const MempoolTracker = () => {
 
   const fetchHistoricalData = async () => {
     try {
-      // Fetch 30-day historical data from mempool.space
-      const response = await fetch('https://mempool.space/api/v1/statistics/30d');
+      // Fetch 1-month historical data from mempool.space
+      const response = await fetch('https://mempool.space/api/v1/statistics/1m');
       
       // Check if the response is successful before parsing as JSON
       if (!response.ok) {
@@ -97,7 +97,7 @@ export const MempoolTracker = () => {
       const data = await response.json();
       
       if (data && Array.isArray(data)) {
-        // Calculate averages from the last 30 days
+        // Calculate averages from the last month
         const totalDays = data.length;
         const totals = data.reduce((acc, day) => ({
           pendingTxs: acc.pendingTxs + (day.mempool_count || 0),

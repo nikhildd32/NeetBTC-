@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { 
   Shield, 
   Wallet, 
-  BookOpen, 
   Zap, 
   Globe, 
   Users, 
@@ -139,53 +138,12 @@ export const Recommendations = () => {
             ]}
           />
 
-          {/* Education Section */}
-          <RecommendationSection
-            icon={<BookOpen className="h-8 w-8" />}
-            title="Bitcoin Education"
-            description="Learn about Bitcoin from trusted sources"
-            items={[
-              {
-                name: "Bitcoin Standard",
-                description: "Essential book by Saifedean Ammous on Bitcoin's economic principles",
-                url: "https://saifedean.com/thebitcoinstandard/",
-                features: ["Economic Theory", "Sound Money", "Historical Context", "Future Implications"],
-                rating: 5,
-                category: "Book"
-              },
-              {
-                name: "Bitcoin University",
-                description: "Comprehensive online courses for all skill levels",
-                url: "https://bitcoinuniversity.org",
-                features: ["Beginner Friendly", "Technical Deep Dives", "Video Courses", "Community"],
-                rating: 5,
-                category: "Course"
-              },
-              {
-                name: "Bitcoin Magazine",
-                description: "Leading source for Bitcoin news and technical analysis",
-                url: "https://bitcoinmagazine.com",
-                features: ["Daily News", "Technical Articles", "Market Analysis", "Industry Insights"],
-                rating: 5,
-                category: "News"
-              }
-            ]}
-          />
-
           {/* Tools Section */}
           <RecommendationSection
             icon={<Zap className="h-8 w-8" />}
             title="Bitcoin Tools"
             description="Essential tools for Bitcoin users and developers"
             items={[
-              {
-                name: "Mempool.space",
-                description: "The best Bitcoin block explorer and mempool visualizer",
-                url: "https://mempool.space",
-                features: ["Real-time Mempool", "Fee Estimation", "Block Explorer", "Lightning Network"],
-                rating: 5,
-                category: "Explorer"
-              },
               {
                 name: "Bitcoin Core",
                 description: "The reference implementation of Bitcoin",
@@ -201,6 +159,14 @@ export const Recommendations = () => {
                 features: ["Self-Hosted", "No Fees", "Privacy", "Lightning Support"],
                 rating: 5,
                 category: "Payment"
+              },
+              {
+                name: "Electrum",
+                description: "Lightweight Bitcoin wallet with advanced features",
+                url: "https://electrum.org",
+                features: ["SPV Verification", "Hardware Wallet Support", "Multisig", "Plugin System"],
+                rating: 5,
+                category: "Wallet"
               }
             ]}
           />

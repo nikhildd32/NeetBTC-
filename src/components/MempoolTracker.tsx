@@ -96,23 +96,30 @@ export const MempoolTracker = () => {
       
       const data = await response.json();
       
-      if (data && Array.isArray(data)) {
+      if (data && Array.isArray(data) && data.length > 0) {
         // Calculate averages from the last month
-        const totalDays = data.length;
-        const totals = data.reduce((acc, day) => ({
-          pendingTxs: acc.pendingTxs + (day.mempool_count || 0),
-          mempoolSize: acc.mempoolSize + (day.mempool_vsize || 0),
-          totalFees: acc.totalFees + (day.mempool_total_fee || 0),
-          blockTime: acc.blockTime + (day.avg_block_interval || 600) // Default 10 min
-        }), { pendingTxs: 0, mempoolSize: 0, totalFees: 0, blockTime: 0 });
+        const validData = data.filter(day => day && typeof day === 'object');
+        const totalDays = validData.length;
+        
+        if (totalDays > 0) {
+          const totals = validData.reduce((acc, day) => ({
+            pendingTxs: acc.pendingTxs + (day.mempool_count || 0),
+            mempoolSize: acc.mempoolSize + (day.mempool_vsize || 0),
+            totalFees: acc.totalFees + (day.mempool_total_fee || 0),
+            blockTime: acc.blockTime + (day.avg_block_interval || 600) // Default 10 min
+          }), { pendingTxs: 0, mempoolSize: 0, totalFees: 0, blockTime: 0 });
 
-        setHistoricalData({
-          avgPendingTxs: Math.round(totals.pendingTxs / totalDays),
-          avgMempoolSize: Math.round(totals.mempoolSize / totalDays),
-          avgTotalFees: totals.totalFees / totalDays,
-          avgBlockTime: totals.blockTime / totalDays
-        });
+          setHistoricalData({
+            avgPendingTxs: Math.max(Math.round(totals.pendingTxs / totalDays), 1), // Ensure minimum 1
+            avgMempoolSize: Math.max(Math.round(totals.mempoolSize / totalDays), 1000000), // Ensure minimum 1MB
+            avgTotalFees: Math.max(totals.totalFees / totalDays, 1000000), // Ensure minimum 0.01 BTC in sats
+            avgBlockTime: Math.max(totals.blockTime / totalDays, 300) // Ensure minimum 5 minutes
+          });
+          return;
+        }
       }
+      
+      throw new Error('No valid historical data received');
     } catch (err) {
       console.error('Error fetching historical data:', err);
       // Set reasonable defaults based on typical Bitcoin network conditions
@@ -229,12 +236,20 @@ export const MempoolTracker = () => {
   };
 
   const getComparisonData = (current: number, average: number) => {
+    // Ensure both values are valid numbers and average is not zero
+    if (!current || !average || average === 0 || !isFinite(current) || !isFinite(average)) {
+      return null; // Return null if invalid data
+    }
+    
     const percentChange = ((current - average) / average) * 100;
     const isHigher = current > average;
     
+    // Cap percentage at reasonable limits
+    const cappedPercentChange = Math.min(Math.abs(percentChange), 999);
+    
     return {
       isHigher,
-      percentChange: Math.abs(percentChange),
+      percentChange: cappedPercentChange,
       arrow: isHigher ? ArrowUp : ArrowDown,
       color: isHigher ? 'text-green-400' : 'text-red-400',
       bgColor: isHigher ? 'bg-green-500/20' : 'bg-red-500/20'
@@ -654,7 +669,7 @@ interface StatCardProps {
     arrow: React.ComponentType<any>;
     color: string;
     bgColor: string;
-  };
+  } | null;
 }
 
 const StatCard = ({ icon, title, value, subtitle, color, comparison }: StatCardProps) => {

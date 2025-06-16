@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive, ArrowUp, ArrowDown } from 'lucide-react';
+import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive, ArrowUp, ArrowDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MempoolStats {
@@ -83,6 +83,7 @@ export const MempoolTracker = () => {
   const [blockDetails, setBlockDetails] = useState<BlockDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [historicalData, setHistoricalData] = useState<HistoricalData | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchHistoricalData = async () => {
     try {
@@ -260,6 +261,27 @@ export const MempoolTracker = () => {
       color: isHigher ? 'text-green-400' : 'text-red-400',
       bgColor: isHigher ? 'bg-green-500/20' : 'bg-red-500/20'
     };
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Check if it looks like a transaction ID (64 hex characters)
+      if (/^[a-fA-F0-9]{64}$/.test(searchQuery.trim())) {
+        // Open mempool.space transaction page
+        window.open(`https://mempool.space/tx/${searchQuery.trim()}`, '_blank');
+      } else if (/^[13bc1][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(searchQuery.trim())) {
+        // Bitcoin address format - open address page
+        window.open(`https://mempool.space/address/${searchQuery.trim()}`, '_blank');
+      } else if (/^[0-9]{1,7}$/.test(searchQuery.trim())) {
+        // Block height - open block page
+        window.open(`https://mempool.space/block-height/${searchQuery.trim()}`, '_blank');
+      } else {
+        // Generic search - try as transaction first
+        window.open(`https://mempool.space/tx/${searchQuery.trim()}`, '_blank');
+      }
+      setSearchQuery('');
+    }
   };
 
   useEffect(() => {
@@ -494,6 +516,47 @@ export const MempoolTracker = () => {
                     </motion.div>
                   ))}
                 </div>
+              </div>
+            </motion.div>
+
+            {/* Search Section at Bottom */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="mt-16 bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-purple-900/30 backdrop-blur-xl rounded-2xl border border-purple-500/30 p-8"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">Search Bitcoin Network</h2>
+                <p className="text-gray-400">Look up transactions, addresses, or blocks</p>
+              </div>
+              
+              <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Enter transaction ID, address, or block height..."
+                    className="w-full px-6 py-4 pl-14 text-lg bg-purple-900/20 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:bg-purple-900/30 transition-all"
+                  />
+                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg hover:from-purple-700 hover:to-purple-900 transition-all duration-300 text-white font-medium"
+                  >
+                    Search
+                  </motion.button>
+                </div>
+              </form>
+              
+              <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm text-gray-500">
+                <span>Examples:</span>
+                <span className="px-2 py-1 bg-purple-500/20 rounded text-purple-300">Transaction ID</span>
+                <span className="px-2 py-1 bg-purple-500/20 rounded text-purple-300">Bitcoin Address</span>
+                <span className="px-2 py-1 bg-purple-500/20 rounded text-purple-300">Block Height</span>
               </div>
             </motion.div>
           </>

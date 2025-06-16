@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const { scrollY } = useScroll();
   const location = useLocation();
 
@@ -34,27 +32,6 @@ export const Header = () => {
     { name: 'Fees', path: '/fees' },
     { name: 'News', path: '/news' }
   ];
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Check if it looks like a transaction ID (64 hex characters)
-      if (/^[a-fA-F0-9]{64}$/.test(searchQuery.trim())) {
-        // Open mempool.space transaction page
-        window.open(`https://mempool.space/tx/${searchQuery.trim()}`, '_blank');
-      } else if (/^[13bc1][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(searchQuery.trim())) {
-        // Bitcoin address format - open address page
-        window.open(`https://mempool.space/address/${searchQuery.trim()}`, '_blank');
-      } else if (/^[0-9]{1,7}$/.test(searchQuery.trim())) {
-        // Block height - open block page
-        window.open(`https://mempool.space/block-height/${searchQuery.trim()}`, '_blank');
-      } else {
-        // Generic search - try as transaction first
-        window.open(`https://mempool.space/tx/${searchQuery.trim()}`, '_blank');
-      }
-      setSearchQuery('');
-    }
-  };
 
   // Bitcoin logo SVG component
   const BitcoinLogo = () => (
@@ -98,7 +75,8 @@ export const Header = () => {
             </h1>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Right-aligned navigation */}
+          <nav className="flex items-center justify-end space-x-8">
             {navItems.map((item) => (
               <NavLink
                 key={item.name}
@@ -109,47 +87,6 @@ export const Header = () => {
               </NavLink>
             ))}
           </nav>
-
-          <div className="flex items-center space-x-4">
-            {/* Transaction Search */}
-            <form onSubmit={handleSearch} className="hidden md:flex">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search transaction, address, or block..."
-                  className="w-64 px-4 py-2 pl-10 text-sm bg-purple-900/20 border border-purple-500/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:bg-purple-900/30 transition-all"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              </div>
-            </form>
-
-            {/* Mobile search button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                const query = prompt('Enter transaction ID, address, or block height:');
-                if (query) {
-                  setSearchQuery(query);
-                  // Trigger search logic
-                  if (/^[a-fA-F0-9]{64}$/.test(query.trim())) {
-                    window.open(`https://mempool.space/tx/${query.trim()}`, '_blank');
-                  } else if (/^[13bc1][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(query.trim())) {
-                    window.open(`https://mempool.space/address/${query.trim()}`, '_blank');
-                  } else if (/^[0-9]{1,7}$/.test(query.trim())) {
-                    window.open(`https://mempool.space/block-height/${query.trim()}`, '_blank');
-                  } else {
-                    window.open(`https://mempool.space/tx/${query.trim()}`, '_blank');
-                  }
-                }
-              }}
-              className="md:hidden flex items-center justify-center w-10 h-10 text-purple-300 bg-purple-900/20 rounded-lg hover:bg-purple-900/40 transition-colors"
-            >
-              <Search className="h-4 w-4" />
-            </motion.button>
-          </div>
         </div>
       </div>
     </motion.header>

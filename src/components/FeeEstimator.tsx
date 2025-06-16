@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Clock, Zap, Rocket, TrendingUp, AlertTriangle, Info, Target, Timer, DollarSign } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Clock, Zap, Rocket, TrendingUp, AlertTriangle, Timer, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface FeeEstimate {
   fastestFee: number;
@@ -20,47 +20,10 @@ interface FeeData {
   timestamp: number;
 }
 
-interface TransactionSize {
-  name: string;
-  description: string;
-  vbytes: number;
-  icon: React.ReactNode;
-}
-
 export const FeeEstimator = () => {
   const [feeData, setFeeData] = useState<FeeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTxSize, setSelectedTxSize] = useState<TransactionSize | null>(null);
-  const [customSize, setCustomSize] = useState<number>(225);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  const transactionSizes: TransactionSize[] = [
-    {
-      name: "Standard P2PKH",
-      description: "Legacy Bitcoin transaction",
-      vbytes: 225,
-      icon: <Target className="h-4 w-4" />
-    },
-    {
-      name: "P2SH-SegWit",
-      description: "Wrapped SegWit transaction",
-      vbytes: 140,
-      icon: <Zap className="h-4 w-4" />
-    },
-    {
-      name: "Native SegWit",
-      description: "Bech32 transaction (most efficient)",
-      vbytes: 110,
-      icon: <Rocket className="h-4 w-4" />
-    },
-    {
-      name: "Multi-sig 2-of-3",
-      description: "Multi-signature transaction",
-      vbytes: 370,
-      icon: <AlertTriangle className="h-4 w-4" />
-    }
-  ];
 
   const fetchFeeData = async () => {
     try {
@@ -134,16 +97,12 @@ export const FeeEstimator = () => {
     fetchFeeData();
   };
 
-  const getEstimatedCost = (feeRate: number, txSize: number): { btc: number; usd: number; sats: number } => {
+  const getEstimatedCost = (feeRate: number, txSize: number = 225): { btc: number; usd: number; sats: number } => {
     const sats = Math.ceil(feeRate * txSize);
     const btc = sats / 100000000;
     const usd = btc * 45000; // Approximate USD value - in production, fetch real BTC price
     
     return { btc, usd, sats };
-  };
-
-  const getCurrentTxSize = (): number => {
-    return selectedTxSize?.vbytes || customSize;
   };
 
   const formatTimeEstimate = (priority: string): string => {
@@ -154,16 +113,6 @@ export const FeeEstimator = () => {
       'economy': '~2+ hours'
     };
     return estimates[priority] || 'Unknown';
-  };
-
-  const getPriorityColor = (priority: string): string => {
-    const colors: { [key: string]: string } = {
-      'fastest': 'red',
-      'halfHour': 'orange',
-      'hour': 'yellow',
-      'economy': 'green'
-    };
-    return colors[priority] || 'gray';
   };
 
   const getPriorityDescription = (priority: string): string => {
@@ -222,91 +171,20 @@ export const FeeEstimator = () => {
           </motion.div>
         )}
 
-        {/* Transaction Size Selector */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-6 mb-8"
-        >
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Info className="h-5 w-5 text-purple-400" />
-            Transaction Type
-          </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {transactionSizes.map((txType) => (
-              <motion.button
-                key={txType.name}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedTxSize(txType)}
-                className={`p-4 rounded-lg border transition-all duration-300 text-left ${
-                  selectedTxSize?.name === txType.name
-                    ? 'bg-purple-600/30 border-purple-500/50'
-                    : 'bg-purple-900/10 border-purple-500/20 hover:border-purple-500/40'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  {txType.icon}
-                  <span className="font-medium">{txType.name}</span>
-                </div>
-                <p className="text-sm text-gray-400 mb-1">{txType.description}</p>
-                <p className="text-xs text-purple-300">{txType.vbytes} vBytes</p>
-              </motion.button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
-            >
-              {showAdvanced ? 'Hide' : 'Show'} Advanced Options
-            </button>
-          </div>
-
-          <AnimatePresence>
-            {showAdvanced && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 pt-4 border-t border-purple-500/20"
-              >
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Custom Transaction Size (vBytes)
-                </label>
-                <input
-                  type="number"
-                  value={customSize}
-                  onChange={(e) => {
-                    setCustomSize(Number(e.target.value));
-                    setSelectedTxSize(null);
-                  }}
-                  className="w-32 px-3 py-2 bg-purple-900/20 border border-purple-500/30 rounded-lg text-white focus:border-purple-500/50 focus:outline-none"
-                  min="100"
-                  max="10000"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
         {/* Fee Estimates */}
         {feeData && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
             <FeeCard
               title="Priority"
               description="Next block (~10 min)"
               feeRate={feeData.recommended.fastestFee}
               icon={<Rocket className="h-6 w-6" />}
-              cost={getEstimatedCost(feeData.recommended.fastestFee, getCurrentTxSize())}
+              cost={getEstimatedCost(feeData.recommended.fastestFee)}
               variant="danger"
               priority="fastest"
               timeEstimate={formatTimeEstimate('fastest')}
@@ -317,7 +195,7 @@ export const FeeEstimator = () => {
               description="Within 30 minutes"
               feeRate={feeData.recommended.halfHourFee}
               icon={<Zap className="h-6 w-6" />}
-              cost={getEstimatedCost(feeData.recommended.halfHourFee, getCurrentTxSize())}
+              cost={getEstimatedCost(feeData.recommended.halfHourFee)}
               variant="warning"
               priority="halfHour"
               timeEstimate={formatTimeEstimate('halfHour')}
@@ -328,7 +206,7 @@ export const FeeEstimator = () => {
               description="Within 1 hour"
               feeRate={feeData.recommended.hourFee}
               icon={<Clock className="h-6 w-6" />}
-              cost={getEstimatedCost(feeData.recommended.hourFee, getCurrentTxSize())}
+              cost={getEstimatedCost(feeData.recommended.hourFee)}
               variant="success"
               priority="hour"
               timeEstimate={formatTimeEstimate('hour')}
@@ -339,7 +217,7 @@ export const FeeEstimator = () => {
               description="2+ hours"
               feeRate={feeData.recommended.economyFee || Math.max(feeData.recommended.hourFee * 0.7, 1)}
               icon={<Timer className="h-6 w-6" />}
-              cost={getEstimatedCost(feeData.recommended.economyFee || Math.max(feeData.recommended.hourFee * 0.7, 1), getCurrentTxSize())}
+              cost={getEstimatedCost(feeData.recommended.economyFee || Math.max(feeData.recommended.hourFee * 0.7, 1))}
               variant="info"
               priority="economy"
               timeEstimate={formatTimeEstimate('economy')}
@@ -354,7 +232,7 @@ export const FeeEstimator = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-8 bg-purple-900/20 border border-purple-500/30 rounded-xl p-6"
+            className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-6"
           >
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-purple-400" />
@@ -450,7 +328,7 @@ const FeeCard = ({
         <div className="pt-3 border-t border-gray-600/30">
           <div className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-400">Cost:</span>
+              <span className="text-gray-400">Cost (225 vB):</span>
               <span className="text-white font-mono">{cost.sats} sats</span>
             </div>
             <div className="flex justify-between">

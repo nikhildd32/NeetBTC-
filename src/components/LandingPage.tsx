@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown } from 'lucide-react';
+import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -175,10 +175,6 @@ export const LandingPage = () => {
             <FAQItem
               question="How can I prevent a transaction from getting stuck?"
               answer="Use our Fee Estimator before sending transactions to choose an appropriate fee rate based on your desired confirmation time. Higher fee rates generally mean faster confirmations."
-            />
-            <FAQItem
-              question="How can I look up a transaction?"
-              answer="Enter your transaction ID (TXID) in our Mempool Tracker to view its current status, including confirmation progress and fee information."
             />
           </div>
         </div>

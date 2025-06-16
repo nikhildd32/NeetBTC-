@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive, ArrowUp, ArrowDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { StatCardSkeleton, BlockCardSkeleton } from './LoadingSkeleton';
 
 interface MempoolStats {
   count: number;
@@ -377,8 +378,20 @@ export const MempoolTracker = () => {
 
         {/* Loading State */}
         {loading && !mempoolStats && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          <div className="space-y-8">
+            {/* Stats Grid Skeleton */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <StatCardSkeleton key={index} />
+              ))}
+            </div>
+            
+            {/* Blocks Skeleton */}
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <BlockCardSkeleton key={index} />
+              ))}
+            </div>
           </div>
         )}
 
@@ -539,6 +552,7 @@ export const MempoolTracker = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Enter transaction ID, address, or block height..."
                     className="w-full px-6 py-4 pl-14 text-lg bg-purple-900/20 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:bg-purple-900/30 transition-all"
+                    aria-label="Search Bitcoin network"
                   />
                   <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <motion.button
@@ -546,6 +560,7 @@ export const MempoolTracker = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg hover:from-purple-700 hover:to-purple-900 transition-all duration-300 text-white font-medium"
+                    aria-label="Search"
                   >
                     Search
                   </motion.button>
@@ -579,15 +594,19 @@ export const MempoolTracker = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-gradient-to-br from-purple-900/90 to-purple-800/80 border border-purple-500/30 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto backdrop-blur-md"
               onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-labelledby="block-details-title"
+              aria-describedby="block-details-description"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Block #{selectedBlock.height}</h2>
-                  <p className="text-purple-300">{getTimeAgo(selectedBlock.timestamp)}</p>
+                  <h2 id="block-details-title" className="text-3xl font-bold text-white mb-2">Block #{selectedBlock.height}</h2>
+                  <p id="block-details-description" className="text-purple-300">{getTimeAgo(selectedBlock.timestamp)}</p>
                 </div>
                 <button
                   onClick={closeModal}
                   className="p-2 hover:bg-purple-800/50 rounded-lg transition-colors"
+                  aria-label="Close block details"
                 >
                   <X className="h-6 w-6 text-gray-400" />
                 </button>
@@ -691,6 +710,7 @@ export const MempoolTracker = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors"
+                            aria-label={`Visit ${blockDetails.extras.pool.name} website`}
                           >
                             <ExternalLink className="h-4 w-4" />
                             Visit
@@ -707,6 +727,7 @@ export const MempoolTracker = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl hover:from-purple-700 hover:to-purple-900 transition-all duration-300 text-white font-medium"
+                      aria-label="View block on Mempool.space"
                     >
                       <ExternalLink className="h-4 w-4" />
                       View on Mempool.space

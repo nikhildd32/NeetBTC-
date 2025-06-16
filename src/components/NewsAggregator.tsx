@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, ExternalLink, Newspaper, ArrowUpRight, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { NewsCardSkeleton } from './LoadingSkeleton';
 
 interface NewsItem {
   id: string;
@@ -166,6 +167,7 @@ export const NewsAggregator = () => {
             onClick={handleRefresh}
             disabled={loading}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl hover:from-purple-700 hover:to-purple-900 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+            aria-label="Refresh news"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -177,6 +179,7 @@ export const NewsAggregator = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-yellow-900/20 border border-yellow-500/30 text-yellow-400 p-4 rounded-xl mb-8 backdrop-blur-sm"
+            role="alert"
           >
             <div className="flex items-center gap-2">
               <ExternalLink className="h-4 w-4" />
@@ -187,8 +190,10 @@ export const NewsAggregator = () => {
 
         <AnimatePresence>
           {loading && news.length === 0 ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+            <div className="space-y-6">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <NewsCardSkeleton key={index} />
+              ))}
             </div>
           ) : (
             <motion.div
@@ -211,6 +216,7 @@ export const NewsAggregator = () => {
             <button
               onClick={handleRefresh}
               className="mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              aria-label="Try loading news again"
             >
               Try Again
             </button>
@@ -236,6 +242,13 @@ const NewsCard = ({ article, index, getTimeAgo }: NewsCardProps) => {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
   
   return (
     <motion.div
@@ -244,14 +257,18 @@ const NewsCard = ({ article, index, getTimeAgo }: NewsCardProps) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={{ scale: 1.02, y: -2 }}
       onClick={handleClick}
-      className="block bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-xl overflow-hidden backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20 group cursor-pointer"
+      onKeyDown={handleKeyDown}
+      className="block bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-xl overflow-hidden backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+      role="button"
+      tabIndex={0}
+      aria-label={`Read article: ${title}`}
     >
-      <div className="p-6 flex gap-6">
+      <article className="p-6 flex gap-6">
         {imageUrl ? (
           <div className="w-48 h-32 flex-shrink-0 overflow-hidden rounded-lg">
             <img 
               src={imageUrl} 
-              alt={title}
+              alt=""
               className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
               onError={(e) => {
                 // Hide image if it fails to load
@@ -282,7 +299,7 @@ const NewsCard = ({ article, index, getTimeAgo }: NewsCardProps) => {
               </span>
               <div className="flex items-center gap-1 text-sm text-gray-500">
                 <Clock className="h-3 w-3" />
-                <time>{getTimeAgo(publishedAt)}</time>
+                <time dateTime={publishedAt}>{getTimeAgo(publishedAt)}</time>
               </div>
             </div>
             <div className="flex items-center gap-1 text-sm text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -291,7 +308,7 @@ const NewsCard = ({ article, index, getTimeAgo }: NewsCardProps) => {
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </motion.div>
   );
 };

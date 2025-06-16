@@ -371,6 +371,11 @@ export const LandingPage = () => {
               answer="Transactions might not confirm quickly if the fee rate is too low compared to current network demand. You can use our Fee Estimator to check recommended rates for different confirmation priorities. If your transaction is stuck, you can use RBF (Replace-By-Fee) to increase the fee and speed up confirmation."
               delay={0.2}
             />
+            <FAQItem
+              question="Explore"
+              answer="NeetBTC features advanced capabilities including AI-powered fee predictions using machine learning algorithms, comprehensive accessibility support with screen reader compatibility, keyboard shortcuts for power users (press ? to see all shortcuts), loading skeletons for better perceived performance, and robust error handling to ensure a smooth user experience."
+              delay={0.3}
+            />
           </motion.div>
 
           {/* Easter Egg Button - Hidden at bottom */}
@@ -387,6 +392,7 @@ export const LandingPage = () => {
                 transition: { type: "spring", stiffness: 400, damping: 25 }
               }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Explore recommendations"
             >
               <div className="relative z-10 flex items-center gap-2">
                 <motion.div
@@ -449,7 +455,8 @@ const QuickAccessButton = ({ icon, title, description, onClick, delay }: {
       transition: { type: "spring", stiffness: 400, damping: 25 }
     }}
     whileTap={{ scale: 0.95 }}
-    className="group relative p-8 bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-purple-900/30 backdrop-blur-xl rounded-2xl border border-purple-500/30 transition-all duration-500 hover:border-purple-400/60 hover:shadow-2xl hover:shadow-purple-500/25"
+    className="group relative p-8 bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-purple-900/30 backdrop-blur-xl rounded-2xl border border-purple-500/30 transition-all duration-500 hover:border-purple-400/60 hover:shadow-2xl hover:shadow-purple-500/25 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+    aria-label={`Go to ${title} - ${description}`}
   >
     {/* Animated background gradient */}
     <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-purple-500/0 to-purple-400/0 group-hover:from-purple-600/10 group-hover:via-purple-500/5 group-hover:to-purple-400/10 rounded-2xl transition-all duration-500" />
@@ -558,9 +565,11 @@ const FAQItem = ({ question, answer, delay }: {
     >
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-8 py-6 flex justify-between items-center text-left bg-purple-900/20 group-hover:bg-purple-900/30 transition-all duration-300"
+        className="w-full px-8 py-6 flex justify-between items-center text-left bg-purple-900/20 group-hover:bg-purple-900/30 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
+        aria-expanded={isOpen}
+        aria-controls={`faq-answer-${question.replace(/\s+/g, '-').toLowerCase()}`}
       >
         <span className="text-lg font-semibold text-purple-100 group-hover:text-white transition-colors">
           {question}
@@ -586,6 +595,7 @@ const FAQItem = ({ question, answer, delay }: {
         className="overflow-hidden"
       >
         <motion.div 
+          id={`faq-answer-${question.replace(/\s+/g, '-').toLowerCase()}`}
           className="px-8 py-6 bg-purple-900/10 text-gray-300 leading-relaxed"
           initial={{ y: -10 }}
           animate={{ y: isOpen ? 0 : -10 }}

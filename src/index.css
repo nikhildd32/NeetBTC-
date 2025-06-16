@@ -36,6 +36,73 @@
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #a855f7, #8b5cf6);
   }
+
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .bg-purple-900\/20 {
+      background-color: rgba(88, 28, 135, 0.4);
+    }
+    
+    .border-purple-500\/30 {
+      border-color: rgba(168, 85, 247, 0.6);
+    }
+    
+    .text-gray-400 {
+      color: rgb(156, 163, 175);
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Focus indicators for better accessibility */
+  *:focus-visible {
+    outline: 2px solid rgba(168, 85, 247, 0.8);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Ensure sufficient color contrast */
+  .text-gray-500 {
+    color: rgb(156, 163, 175); /* Improved contrast */
+  }
+
+  .text-gray-400 {
+    color: rgb(156, 163, 175); /* Improved contrast */
+  }
 }
 
 @layer utilities {
@@ -83,6 +150,21 @@
 
   .backface-hidden {
     backface-visibility: hidden;
+  }
+
+  /* Line clamp utility for text truncation */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 
   @keyframes float {
@@ -213,4 +295,42 @@ a,
 ::-moz-selection {
   background: rgba(147, 51, 234, 0.3);
   color: white;
+}
+
+/* Improved accessibility for keyboard navigation */
+.keyboard-navigation *:focus {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .bg-purple-900\/20 {
+    background-color: rgba(88, 28, 135, 0.5);
+  }
+  
+  .text-gray-400 {
+    color: #d1d5db;
+  }
+  
+  .border-purple-500\/30 {
+    border-color: rgba(168, 85, 247, 0.7);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .bg-gradient-to-r {
+    background: #6b46c1 !important;
+    -webkit-print-color-adjust: exact;
+  }
 }

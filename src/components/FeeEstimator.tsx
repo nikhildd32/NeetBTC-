@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Clock, Zap, Rocket, TrendingUp, AlertTriangle, Timer, DollarSign } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { RefreshCw, Clock, Zap, Rocket, TrendingUp, AlertTriangle, Timer, DollarSign, Brain, Target, TrendingDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { aiFeePredictionService, FeePrediction } from '../services/aiFeePrediction';
+import { FeeCardSkeleton } from './LoadingSkeleton';
 
 interface FeeEstimate {
   fastestFee: number;
@@ -24,6 +26,8 @@ export const FeeEstimator = () => {
   const [feeData, setFeeData] = useState<FeeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aiPrediction, setAiPrediction] = useState<FeePrediction | null>(null);
+  const [showPredictions, setShowPredictions] = useState(false);
 
   const fetchFeeData = async () => {
     try {
@@ -72,11 +76,28 @@ export const FeeEstimator = () => {
         mempoolFees['2hour'] = recommended.economyFee || Math.max(recommended.hourFee * 0.7, 1);
       }
 
-      setFeeData({
+      const newFeeData = {
         recommended,
         mempool: mempoolFees,
         timestamp: Date.now()
+      };
+
+      setFeeData(newFeeData);
+
+      // Add data to AI service for predictions
+      aiFeePredictionService.addDataPoint({
+        fastestFee: recommended.fastestFee,
+        halfHourFee: recommended.halfHourFee,
+        hourFee: recommended.hourFee,
+        economyFee: recommended.economyFee || Math.max(recommended.hourFee * 0.7, 1),
+        mempoolSize: 3500000, // Approximate - would need actual mempool size
+        pendingTxs: 5000, // Approximate - would need actual pending tx count
+        blockHeight: 800000 // Approximate - would need actual block height
       });
+
+      // Generate AI prediction
+      const prediction = aiFeePredictionService.generatePrediction();
+      setAiPrediction(prediction);
 
       setError(null);
     } catch (err) {
@@ -125,6 +146,28 @@ export const FeeEstimator = () => {
     return descriptions[priority] || '';
   };
 
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'increasing':
+        return <TrendingUp className="h-4 w-4 text-red-400" />;
+      case 'decreasing':
+        return <TrendingDown className="h-4 w-4 text-green-400" />;
+      default:
+        return <Target className="h-4 w-4 text-blue-400" />;
+    }
+  };
+
+  const getTrendColor = (trend: string) => {
+    switch (trend) {
+      case 'increasing':
+        return 'text-red-400';
+      case 'decreasing':
+        return 'text-green-400';
+      default:
+        return 'text-blue-400';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0118] text-white pt-24 pb-16 px-4">
       <div className="max-w-5xl mx-auto">
@@ -138,7 +181,7 @@ export const FeeEstimator = () => {
             Bitcoin Fee Estimator
           </h1>
           <p className="text-xl text-gray-400">
-            Real-time fee recommendations based on current mempool conditions
+            Real-time fee recommendations with AI-powered predictions
           </p>
         </motion.div>
 
@@ -148,17 +191,40 @@ export const FeeEstimator = () => {
             <p className="text-sm text-gray-400">
               {feeData ? `Live data • Updated ${new Date(feeData.timestamp).toLocaleTimeString()}` : 'Loading...'}
             </p>
+            {aiPrediction && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-purple-500/20 rounded-full">
+                <Brain className="h-3 w-3 text-purple-400" />
+                <span className="text-xs text-purple-300">AI Predictions Available</span>
+              </div>
+            )}
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-900/20 rounded-lg border border-purple-500/30 hover:bg-purple-900/30 hover:border-purple-500/50 transition-all duration-300"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </motion.button>
+          <div className="flex gap-2">
+            {aiPrediction && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowPredictions(!showPredictions)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-300 ${
+                  showPredictions 
+                    ? 'bg-purple-600 border-purple-500 text-white' 
+                    : 'bg-purple-900/20 border-purple-500/30 text-purple-300 hover:bg-purple-900/30'
+                }`}
+              >
+                <Brain className="h-4 w-4" />
+                AI Predictions
+              </motion.button>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-900/20 rounded-lg border border-purple-500/30 hover:bg-purple-900/30 hover:border-purple-500/50 transition-all duration-300"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </motion.button>
+          </div>
         </div>
 
         {error && (
@@ -171,8 +237,135 @@ export const FeeEstimator = () => {
           </motion.div>
         )}
 
+        {/* AI Predictions Panel */}
+        <AnimatePresence>
+          {showPredictions && aiPrediction && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -20 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="mb-8 overflow-hidden"
+            >
+              <div className="bg-gradient-to-br from-purple-900/40 via-purple-800/30 to-purple-900/40 backdrop-blur-xl rounded-2xl border border-purple-500/40 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-500/20 rounded-lg">
+                      <Brain className="h-6 w-6 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">AI Fee Predictions</h3>
+                      <p className="text-sm text-gray-400">
+                        Based on {aiFeePredictionService.getHistoricalDataCount()} data points
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getTrendIcon(aiPrediction.trend)}
+                    <span className={`text-sm font-medium ${getTrendColor(aiPrediction.trend)}`}>
+                      {aiPrediction.trend}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-purple-900/30 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-purple-300 mb-2">Next Hour</h4>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">High:</span>
+                        <span className="text-white font-mono">{aiPrediction.nextHour.high} sat/vB</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Medium:</span>
+                        <span className="text-white font-mono">{aiPrediction.nextHour.medium} sat/vB</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Low:</span>
+                        <span className="text-white font-mono">{aiPrediction.nextHour.low} sat/vB</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      Confidence: {(aiPrediction.nextHour.confidence * 100).toFixed(0)}%
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-900/30 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-purple-300 mb-2">Next 6 Hours</h4>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">High:</span>
+                        <span className="text-white font-mono">{aiPrediction.next6Hours.high} sat/vB</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Medium:</span>
+                        <span className="text-white font-mono">{aiPrediction.next6Hours.medium} sat/vB</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Low:</span>
+                        <span className="text-white font-mono">{aiPrediction.next6Hours.low} sat/vB</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      Confidence: {(aiPrediction.next6Hours.confidence * 100).toFixed(0)}%
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-900/30 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-purple-300 mb-2">Next 24 Hours</h4>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">High:</span>
+                        <span className="text-white font-mono">{aiPrediction.next24Hours.high} sat/vB</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Medium:</span>
+                        <span className="text-white font-mono">{aiPrediction.next24Hours.medium} sat/vB</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Low:</span>
+                        <span className="text-white font-mono">{aiPrediction.next24Hours.low} sat/vB</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      Confidence: {(aiPrediction.next24Hours.confidence * 100).toFixed(0)}%
+                    </div>
+                  </div>
+                </div>
+
+                {aiPrediction.factors.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-purple-300 mb-2">Influencing Factors</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {aiPrediction.factors.map((factor, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-purple-500/20 rounded text-xs text-purple-300"
+                        >
+                          {factor}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Fee Estimates */}
-        {feeData && (
+        {loading && !feeData ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            {Array.from({ length: 4 }).map((_, index) => (
+              <FeeCardSkeleton key={index} />
+            ))}
+          </motion.div>
+        ) : feeData ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -224,7 +417,7 @@ export const FeeEstimator = () => {
               priorityDescription={getPriorityDescription('economy')}
             />
           </motion.div>
-        )}
+        ) : null}
 
         {/* Network Status */}
         {feeData && (

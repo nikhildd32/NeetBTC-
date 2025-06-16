@@ -282,7 +282,7 @@ export const MempoolTracker = () => {
         )}
 
         {/* Main Content - Only render when data is available */}
-        {!loading && (
+        {!loading && mempoolStats && (
           <>
             {/* Stats Grid */}
             <motion.div

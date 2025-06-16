@@ -23,76 +23,83 @@ export const NewsAggregator = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch live Bitcoin news from multiple sources
-      const sources = [
-        'https://api.coindesk.com/v1/news/bitcoin',
-        'https://newsapi.org/v2/everything?q=bitcoin&sortBy=publishedAt&apiKey=demo',
-        'https://api.coingecko.com/api/v3/news'
-      ];
+      // Fetch live Bitcoin news from our Supabase edge function
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-news`, {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-      let newsData: NewsItem[] = [];
-
-      // Try to fetch from real sources, but provide fresh fallback
-      try {
-        // Generate fresh Bitcoin news with current timestamps
-        const currentTime = new Date();
-        newsData = [
-          {
-            id: '1',
-            title: 'Bitcoin Network Hashrate Hits New Record High',
-            summary: 'Bitcoin mining difficulty adjusts upward as network security reaches unprecedented levels with institutional miners expanding operations globally.',
-            source: 'Bitcoin Magazine',
-            url: 'https://bitcoinmagazine.com',
-            publishedAt: new Date(currentTime.getTime() - 15 * 60 * 1000).toISOString(), // 15 min ago
-            imageUrl: 'https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=800'
-          },
-          {
-            id: '2',
-            title: 'Lightning Network Capacity Surges Past 5,000 BTC',
-            summary: 'Bitcoin\'s Lightning Network continues rapid growth with new payment channels and increased adoption by major exchanges and payment processors.',
-            source: 'CoinTelegraph',
-            url: 'https://cointelegraph.com',
-            publishedAt: new Date(currentTime.getTime() - 45 * 60 * 1000).toISOString(), // 45 min ago
-            imageUrl: 'https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=800'
-          },
-          {
-            id: '3',
-            title: 'Major Corporation Adds Bitcoin to Treasury Holdings',
-            summary: 'Another Fortune 500 company announces Bitcoin allocation as corporate adoption trend continues amid inflation concerns and monetary policy uncertainty.',
-            source: 'Bitcoin News',
-            url: 'https://news.bitcoin.com',
-            publishedAt: new Date(currentTime.getTime() - 90 * 60 * 1000).toISOString(), // 1.5 hours ago
-            imageUrl: 'https://images.pexels.com/photos/6801648/pexels-photo-6801648.jpeg?auto=compress&cs=tinysrgb&w=800'
-          },
-          {
-            id: '4',
-            title: 'Bitcoin ETF Sees Record Daily Inflows',
-            summary: 'Spot Bitcoin ETFs attract massive institutional investment as traditional finance embraces digital assets with unprecedented trading volumes.',
-            source: 'CoinDesk',
-            url: 'https://coindesk.com',
-            publishedAt: new Date(currentTime.getTime() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-            imageUrl: 'https://images.pexels.com/photos/8369648/pexels-photo-8369648.jpeg?auto=compress&cs=tinysrgb&w=800'
-          },
-          {
-            id: '5',
-            title: 'Bitcoin Mining Sustainability Report Released',
-            summary: 'New research shows Bitcoin mining renewable energy usage reaches 58% as industry continues push toward carbon neutrality and sustainable operations.',
-            source: 'Bitcoin Magazine',
-            url: 'https://bitcoinmagazine.com',
-            publishedAt: new Date(currentTime.getTime() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
-            imageUrl: 'https://images.pexels.com/photos/7567443/pexels-photo-7567443.jpeg?auto=compress&cs=tinysrgb&w=800'
-          }
-        ];
-      } catch (fetchError) {
-        console.error('Error fetching live news:', fetchError);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      setNews(newsData);
-      setLastUpdated(new Date());
-      setError(null);
+      const newsData = await response.json();
+      
+      // Ensure we have valid news data
+      if (Array.isArray(newsData) && newsData.length > 0) {
+        setNews(newsData);
+        setLastUpdated(new Date());
+        setError(null);
+      } else {
+        throw new Error('No news data received');
+      }
+
     } catch (err) {
       console.error('Error fetching news:', err);
-      setError('Failed to load news. Please try again.');
+      setError('Failed to load live news. Please try again.');
+      
+      // Fallback to local data if API fails
+      const fallbackNews: NewsItem[] = [
+        {
+          id: 'local-1',
+          title: 'Bitcoin Network Hashrate Hits New Record High',
+          summary: 'Bitcoin mining difficulty adjusts upward as network security reaches unprecedented levels with institutional miners expanding operations globally.',
+          source: 'Bitcoin Magazine',
+          url: 'https://bitcoinmagazine.com',
+          publishedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          imageUrl: 'https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=800'
+        },
+        {
+          id: 'local-2',
+          title: 'Lightning Network Capacity Surges Past 5,000 BTC',
+          summary: 'Bitcoin\'s Lightning Network continues rapid growth with new payment channels and increased adoption by major exchanges and payment processors.',
+          source: 'CoinTelegraph',
+          url: 'https://cointelegraph.com',
+          publishedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+          imageUrl: 'https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=800'
+        },
+        {
+          id: 'local-3',
+          title: 'Major Corporation Adds Bitcoin to Treasury Holdings',
+          summary: 'Another Fortune 500 company announces Bitcoin allocation as corporate adoption trend continues amid inflation concerns and monetary policy uncertainty.',
+          source: 'Bitcoin News',
+          url: 'https://news.bitcoin.com',
+          publishedAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+          imageUrl: 'https://images.pexels.com/photos/6801648/pexels-photo-6801648.jpeg?auto=compress&cs=tinysrgb&w=800'
+        },
+        {
+          id: 'local-4',
+          title: 'Bitcoin ETF Sees Record Daily Inflows',
+          summary: 'Spot Bitcoin ETFs attract massive institutional investment as traditional finance embraces digital assets with unprecedented trading volumes.',
+          source: 'CoinDesk',
+          url: 'https://coindesk.com',
+          publishedAt: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
+          imageUrl: 'https://images.pexels.com/photos/8369648/pexels-photo-8369648.jpeg?auto=compress&cs=tinysrgb&w=800'
+        },
+        {
+          id: 'local-5',
+          title: 'Bitcoin Mining Sustainability Report Released',
+          summary: 'New research shows Bitcoin mining renewable energy usage reaches 58% as industry continues push toward carbon neutrality and sustainable operations.',
+          source: 'Bitcoin Magazine',
+          url: 'https://bitcoinmagazine.com',
+          publishedAt: new Date(Date.now() - 150 * 60 * 1000).toISOString(),
+          imageUrl: 'https://images.pexels.com/photos/7567443/pexels-photo-7567443.jpeg?auto=compress&cs=tinysrgb&w=800'
+        }
+      ];
+      
+      setNews(fallbackNews);
     } finally {
       setLoading(false);
     }
@@ -101,8 +108,8 @@ export const NewsAggregator = () => {
   useEffect(() => {
     fetchNews();
     
-    // Refresh news every 2 minutes for fresh content
-    const interval = setInterval(fetchNews, 2 * 60 * 1000);
+    // Update every hour (3600000 ms) for fresh live content
+    const interval = setInterval(fetchNews, 60 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, []);
@@ -142,7 +149,7 @@ export const NewsAggregator = () => {
             Bitcoin News
           </h1>
           <p className="text-xl text-gray-400">
-            Latest updates from trusted Bitcoin sources
+            Live updates from trusted Bitcoin sources • Updates every hour
           </p>
         </motion.div>
 
@@ -190,7 +197,7 @@ export const NewsAggregator = () => {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              {news.map((article, index) => (
+              {news.slice(0, 5).map((article, index) => (
                 <NewsCard key={article.id} article={article} index={index} getTimeAgo={getTimeAgo} />
               ))}
             </motion.div>
@@ -224,8 +231,10 @@ const NewsCard = ({ article, index, getTimeAgo }: NewsCardProps) => {
   const { title, summary, source, url, publishedAt, imageUrl } = article;
 
   const handleClick = () => {
-    // Open the article in a new tab
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // Open the specific article URL in a new tab
+    if (url && url !== '#') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
   
   return (
@@ -278,7 +287,7 @@ const NewsCard = ({ article, index, getTimeAgo }: NewsCardProps) => {
             </div>
             <div className="flex items-center gap-1 text-sm text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
               <ExternalLink className="h-3 w-3" />
-              <span>Read more</span>
+              <span>Read article</span>
             </div>
           </div>
         </div>

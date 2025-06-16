@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
+import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -243,7 +243,7 @@ export const LandingPage = () => {
               delay={0}
             />
             <QuickAccessButton
-              icon={<BitcoinLogo size={32} />}
+              icon={<Bitcoin className="h-8 w-8" />}
               title="Fees"
               description="Smart fee estimation"
               onClick={() => navigate('/fees')}
@@ -314,7 +314,7 @@ export const LandingPage = () => {
               delay={0.1}
             />
             <FeatureCard
-              icon={<Github className="h-8 w-8" />}
+              icon={<BitcoinLogo size={32} />}
               title="Community"
               description="Built by Bitcoiners, for Bitcoiners"
               delay={0.2}

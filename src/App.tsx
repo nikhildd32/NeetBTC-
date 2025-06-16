@@ -5,6 +5,7 @@ import { LandingPage } from './components/LandingPage';
 import { MempoolTracker } from './components/MempoolTracker';
 import { FeeEstimator } from './components/FeeEstimator';
 import { NewsAggregator } from './components/NewsAggregator';
+import { Recommendations } from './components/Recommendations';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/mempool" element={<MempoolTracker />} />
         <Route path="/fees" element={<FeeEstimator />} />
         <Route path="/news" element={<NewsAggregator />} />
+        <Route path="/recommendations" element={<Recommendations />} />
       </Routes>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown } from 'lucide-react';
+import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -201,6 +201,63 @@ export const LandingPage = () => {
               delay={0.2}
             />
           </motion.div>
+
+          {/* Easter Egg Button */}
+          <motion.div
+            variants={itemVariants}
+            className="mt-16"
+          >
+            <motion.button
+              onClick={() => navigate('/recommendations')}
+              className="group relative px-8 py-4 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-red-500/20 backdrop-blur-xl rounded-2xl border border-yellow-500/30 transition-all duration-500 hover:border-yellow-400/60 hover:shadow-2xl hover:shadow-yellow-500/25"
+              whileHover={{ 
+                scale: 1.05,
+                y: -5,
+                rotateY: 5,
+                transition: { type: "spring", stiffness: 400, damping: 25 }
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {/* Animated background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/0 via-orange-500/0 to-red-400/0 group-hover:from-yellow-600/10 group-hover:via-orange-500/5 group-hover:to-red-400/10 rounded-2xl transition-all duration-500" />
+              
+              {/* Glowing border effect */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-500/0 via-orange-400/0 to-red-500/0 group-hover:from-yellow-500/20 group-hover:via-orange-400/30 group-hover:to-red-500/20 blur-sm transition-all duration-500" />
+              
+              <div className="relative z-10 flex items-center gap-3">
+                <motion.div
+                  animate={{
+                    rotate: [0, 360],
+                    scale: [1, 1.2, 1],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <Sparkles className="h-6 w-6 text-yellow-400" />
+                </motion.div>
+                <span className="text-lg font-semibold bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-transparent bg-clip-text">
+                  Discover Our Recommendations
+                </span>
+                <motion.div
+                  animate={{
+                    rotate: [0, -360],
+                    scale: [1, 1.2, 1],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1.5
+                  }}
+                >
+                  <Sparkles className="h-6 w-6 text-orange-400" />
+                </motion.div>
+              </div>
+            </motion.button>
+          </motion.div>
         </motion.div>
       </div>
 
@@ -312,13 +369,8 @@ export const LandingPage = () => {
             />
             <FAQItem
               question="Why isn't my transaction confirming?"
-              answer="Transactions might not confirm quickly if the fee rate is too low compared to current network demand. You can use our Fee Estimator to check recommended rates for different confirmation priorities."
+              answer="Transactions might not confirm quickly if the fee rate is too low compared to current network demand. You can use our Fee Estimator to check recommended rates for different confirmation priorities. If your transaction is stuck, you can use RBF (Replace-By-Fee) to increase the fee and speed up confirmation."
               delay={0.2}
-            />
-            <FAQItem
-              question="How can I prevent a transaction from getting stuck?"
-              answer="Use our Fee Estimator before sending transactions to choose an appropriate fee rate based on your desired confirmation time. Higher fee rates generally mean faster confirmations."
-              delay={0.3}
             />
           </motion.div>
         </div>

@@ -91,7 +91,7 @@ const ShortcutsDropdown = () => {
     <div className="relative">
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 bg-black/10 backdrop-blur-sm rounded-md border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 text-xs opacity-50 hover:opacity-100"
+        className="flex items-center gap-1 px-2 py-1 bg-black/20 backdrop-blur-sm rounded-md border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 text-xs opacity-60 hover:opacity-100"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Keyboard shortcuts"

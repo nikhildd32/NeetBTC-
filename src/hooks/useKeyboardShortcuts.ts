@@ -41,18 +41,6 @@ export const useKeyboardShortcuts = () => {
       description: 'Refresh Page'
     },
     {
-      key: 's',
-      ctrlKey: true,
-      action: (e) => {
-        e?.preventDefault();
-        const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
-        if (searchInput) {
-          searchInput.focus();
-        }
-      },
-      description: 'Focus Search (Ctrl+S)'
-    },
-    {
       key: '/',
       action: () => {
         const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
@@ -60,7 +48,7 @@ export const useKeyboardShortcuts = () => {
           searchInput.focus();
         }
       },
-      description: 'Focus Search (/)'
+      description: 'Focus Search'
     },
     {
       key: 'Escape',
@@ -70,7 +58,7 @@ export const useKeyboardShortcuts = () => {
           activeElement.blur();
         }
         // Close any open modals
-        const closeButtons = document.querySelectorAll('[aria-label="Close"]');
+        const closeButtons = document.querySelectorAll('[aria-label*="Close"]');
         if (closeButtons.length > 0) {
           (closeButtons[0] as HTMLElement).click();
         }
@@ -84,14 +72,14 @@ export const useKeyboardShortcuts = () => {
     if (event.target instanceof HTMLInputElement || 
         event.target instanceof HTMLTextAreaElement ||
         (event.target as HTMLElement).contentEditable === 'true') {
-      // Allow Escape and Ctrl+S even in inputs
-      if (event.key !== 'Escape' && !(event.ctrlKey && event.key === 's')) {
+      // Allow Escape and specific keys even in inputs
+      if (event.key !== 'Escape' && event.key !== '?') {
         return;
       }
     }
 
-    // Handle ? key specifically (shift + /)
-    if (event.key === '?' && event.shiftKey) {
+    // Handle ? key specifically (shift + / or direct ?)
+    if ((event.key === '?' || (event.key === '/' && event.shiftKey)) && !event.ctrlKey && !event.altKey && !event.metaKey) {
       event.preventDefault();
       showKeyboardShortcuts();
       return;

@@ -112,14 +112,6 @@ src/
 
 For more information, see our [Security Policy](SECURITY.md).
 
-### Privacy
-
-We take your privacy seriously. See our [Privacy Policy](PRIVACY.md) for details about:
-- Data collection and usage
-- Analytics and tracking
-- Third-party services
-- Your rights and choices
-
 ## 🤝 Contributing
 
 We welcome contributions! Here's how to get started:
@@ -157,6 +149,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: [GitHub Issues](https://github.com/yourusername/neetbtc/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/neetbtc/discussions)
 - **Security**: [Security Policy](SECURITY.md)
-- **Privacy**: [Privacy Policy](PRIVACY.md)
 
 *NeetBTC is an open-source project dedicated to making Bitcoin data more accessible and user-friendly for everyone.*

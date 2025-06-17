@@ -55,25 +55,7 @@ npm run dev
 
 Visit `http://localhost:5173` to see the app in action!
 
-### Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Google Analytics
-VITE_GA_TRACKING_ID=your_ga_tracking_id
-
-# API Configuration
-VITE_MEMPOOL_API_BASE=https://mempool.space/api
-
-# Application Configuration
-VITE_APP_NAME=NeetBTC
-VITE_APP_URL=https://neetbtc.com
-```
 
 ### Build for Production
 

@@ -7,9 +7,7 @@
 
 > **All-in-one Bitcoin dashboard with real-time mempool data, smart fee estimation, and latest Bitcoin news**
 
-![NeetBTC Dashboard](https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630&fit=crop)
-
-## ✨ Features
+## Features
 
 ### 🔄 Real-time Mempool Tracker
 - Live unconfirmed transaction monitoring
@@ -68,38 +66,6 @@ npm run build
 npm run preview
 ```
 
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18 + TypeScript
-- **Styling**: Tailwind CSS + Custom animations
-- **Routing**: React Router v6
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Build Tool**: Vite
-- **Data Sources**: Mempool.space API
-
-## 📱 Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| `H` | Go to Home |
-| `M` | Go to Mempool |
-| `F` | Go to Fee Estimator |
-| `N` | Go to News |
-| `/` | Focus Search |
-| `R` | Refresh Page |
-| `?` | Show all shortcuts |
-| `ESC` | Close modals/escape |
-
-## 🎨 Design Philosophy
-
-NeetBTC follows modern design principles:
-
-- **Apple-level aesthetics** - Clean, sophisticated, and intuitive
-- **Micro-interactions** - Thoughtful animations and hover states
-- **Accessibility-first** - WCAG compliant with keyboard navigation
-- **Performance-focused** - Optimized loading and smooth animations
-- **Mobile-responsive** - Perfect experience across all devices
 
 ## 🔧 Development
 
@@ -117,20 +83,6 @@ src/
 └── styles/             # Global styles
 ```
 
-### Key Components
-
-- **Header** - Navigation with search and shortcuts
-- **MempoolTracker** - Real-time mempool visualization
-- **FeeEstimator** - Smart fee calculation engine
-- **NewsAggregator** - Live Bitcoin news feed
-- **ErrorBoundary** - Graceful error handling
-- **LoadingSkeleton** - Performance-optimized loading states
-
-### API Integration
-
-The app integrates with:
-- **Mempool.space API** - Real-time Bitcoin network data
-- **Custom News API** - Aggregated Bitcoin news sources
 
 ## 🤝 Contributing
 
@@ -154,7 +106,7 @@ We welcome contributions! Here's how to get started:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Mempool.space** - For providing excellent Bitcoin network APIs
 - **Bitcoin Community** - For inspiration and feedback
@@ -164,14 +116,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/neetbtc/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/neetbtc/discussions)
-- **Twitter**: [@neetbtc](https://twitter.com/neetbtc)
 
-## 🌟 Star History
-
-If you find this project useful, please consider giving it a star! ⭐
-
----
-
-**Built with ❤️ for the Bitcoin community**
 
 *NeetBTC is an open-source project dedicated to making Bitcoin data more accessible and user-friendly for everyone.*

@@ -45,11 +45,35 @@ cd neetbtc
 # Install dependencies
 npm install
 
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
 # Start development server
 npm run dev
 ```
 
 Visit `http://localhost:5173` to see the app in action!
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Google Analytics
+VITE_GA_TRACKING_ID=your_ga_tracking_id
+
+# API Configuration
+VITE_MEMPOOL_API_BASE=https://mempool.space/api
+
+# Application Configuration
+VITE_APP_NAME=NeetBTC
+VITE_APP_URL=https://neetbtc.com
+```
 
 ### Build for Production
 
@@ -60,7 +84,6 @@ npm run build
 # Preview production build
 npm run preview
 ```
-
 
 ## 🔧 Development
 
@@ -78,6 +101,24 @@ src/
 └── styles/             # Global styles
 ```
 
+### Security
+
+- All sensitive data is stored in environment variables
+- API keys and secrets are never committed to the repository
+- Security headers are implemented for protection against common web vulnerabilities
+- Input validation and sanitization are implemented throughout the application
+- Error handling is implemented to prevent information leakage
+- CORS policies are properly configured
+
+For more information, see our [Security Policy](SECURITY.md).
+
+### Privacy
+
+We take your privacy seriously. See our [Privacy Policy](PRIVACY.md) for details about:
+- Data collection and usage
+- Analytics and tracking
+- Third-party services
+- Your rights and choices
 
 ## 🤝 Contributing
 
@@ -96,6 +137,10 @@ We welcome contributions! Here's how to get started:
 - Add tests for new features
 - Ensure accessibility compliance
 - Maintain responsive design
+- Follow security best practices
+- Update documentation as needed
+
+For more details, see our [Contributing Guidelines](CONTRIBUTING.md).
 
 ## 📄 License
 
@@ -111,6 +156,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/neetbtc/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/neetbtc/discussions)
-
+- **Security**: [Security Policy](SECURITY.md)
+- **Privacy**: [Privacy Policy](PRIVACY.md)
 
 *NeetBTC is an open-source project dedicated to making Bitcoin data more accessible and user-friendly for everyone.*

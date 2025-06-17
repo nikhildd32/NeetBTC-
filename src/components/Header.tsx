@@ -1,6 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { Keyboard, ChevronDown } from 'lucide-react';
+
+const ShortcutsDropdown = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const shortcuts = [
+    { key: 'H', description: 'Home' },
+    { key: 'M', description: 'Mempool' },
+    { key: 'F', description: 'Fees' },
+    { key: 'N', description: 'News' },
+    { key: '/', description: 'Search' },
+    { key: 'R', description: 'Refresh' },
+    { key: '?', description: 'All Shortcuts' }
+  ];
+
+  return (
+    <div className="relative">
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-black/20 backdrop-blur-sm rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 text-xs opacity-70 hover:opacity-100"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label="Keyboard shortcuts"
+      >
+        <Keyboard className="h-3.5 w-3.5 text-purple-400" />
+        <span className="text-purple-300 text-xs font-medium">Shortcuts</span>
+        <ChevronDown className={`h-3 w-3 text-purple-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </motion.button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
+            
+            {/* Dropdown */}
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-md border border-purple-500/30 rounded-xl shadow-xl z-50"
+            >
+              <div className="p-4">
+                <div className="space-y-2.5">
+                  {shortcuts.map((shortcut, index) => (
+                    <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg hover:bg-purple-500/20 transition-colors">
+                      <span className="text-sm text-gray-300">{shortcut.description}</span>
+                      <kbd className="px-2 py-1 bg-purple-800/50 rounded-md text-purple-300 text-xs font-mono border border-purple-600/30">
+                        {shortcut.key}
+                      </kbd>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-purple-500/20">
+                  <p className="text-xs text-gray-500 text-center">Press <kbd className="px-1 py-0.5 bg-purple-800/30 rounded text-purple-400 font-mono">?</kbd> for all shortcuts</p>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -75,17 +143,23 @@ export const Header = () => {
             </h1>
           </Link>
 
-          {/* Right-aligned navigation */}
-          <nav className="flex items-center justify-end space-x-8">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                href={item.path}
-                isActive={location.pathname === item.path}
-              >
-                {item.name}
-              </NavLink>
-            ))}
+          {/* Right-aligned navigation with shortcuts */}
+          <nav className="flex items-center justify-end space-x-6">
+            {/* Shortcuts dropdown - positioned before nav items */}
+            <ShortcutsDropdown />
+            
+            {/* Navigation items */}
+            <div className="flex items-center space-x-8">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.name}
+                  href={item.path}
+                  isActive={location.pathname === item.path}
+                >
+                  {item.name}
+                </NavLink>
+              ))}
+            </div>
           </nav>
         </div>
       </div>

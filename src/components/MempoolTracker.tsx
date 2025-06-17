@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive, ArrowUp, ArrowDown, Search, Keyboard, ChevronDown } from 'lucide-react';
+import { RefreshCw, Activity, Box, Clock, Zap, TrendingUp, Users, Layers, Timer, DollarSign, X, ExternalLink, Hash, Calendar, Cpu, HardDrive, ArrowUp, ArrowDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatCardSkeleton, BlockCardSkeleton } from './LoadingSkeleton';
 
@@ -73,73 +73,6 @@ interface HistoricalData {
   avgTotalFees: number;
   avgBlockTime: number;
 }
-
-const ShortcutsDropdown = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const shortcuts = [
-    { key: 'H', description: 'Home' },
-    { key: 'M', description: 'Mempool' },
-    { key: 'F', description: 'Fees' },
-    { key: 'N', description: 'News' },
-    { key: '/', description: 'Search' },
-    { key: 'R', description: 'Refresh' },
-    { key: '?', description: 'All Shortcuts' }
-  ];
-
-  return (
-    <div className="relative ml-4">
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-black/20 backdrop-blur-sm rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 text-xs opacity-70 hover:opacity-100"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Keyboard shortcuts"
-      >
-        <Keyboard className="h-3.5 w-3.5 text-purple-400" />
-        <span className="text-purple-300 text-xs font-medium">Shortcuts</span>
-        <ChevronDown className={`h-3 w-3 text-purple-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-      </motion.button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 z-40"
-              onClick={() => setIsOpen(false)}
-            />
-            
-            {/* Dropdown */}
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-md border border-purple-500/30 rounded-xl shadow-xl z-50"
-            >
-              <div className="p-4">
-                <div className="space-y-2.5">
-                  {shortcuts.map((shortcut, index) => (
-                    <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg hover:bg-purple-500/20 transition-colors">
-                      <span className="text-sm text-gray-300">{shortcut.description}</span>
-                      <kbd className="px-2 py-1 bg-purple-800/50 rounded-md text-purple-300 text-xs font-mono border border-purple-600/30">
-                        {shortcut.key}
-                      </kbd>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 pt-3 border-t border-purple-500/20">
-                  <p className="text-xs text-gray-500 text-center">Press <kbd className="px-1 py-0.5 bg-purple-800/30 rounded text-purple-400 font-mono">?</kbd> for all shortcuts</p>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
 export const MempoolTracker = () => {
   const [mempoolStats, setMempoolStats] = useState<MempoolStats | null>(null);
@@ -406,12 +339,9 @@ export const MempoolTracker = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="flex items-center justify-center mb-6">
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 via-purple-600 to-purple-800 text-transparent bg-clip-text animate-gradient-text">
-              Bitcoin Mempool
-            </h1>
-            <ShortcutsDropdown />
-          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-purple-600 to-purple-800 text-transparent bg-clip-text animate-gradient-text">
+            Bitcoin Mempool
+          </h1>
           <p className="text-xl text-gray-300 mb-8">
             Live tracking of unconfirmed transactions and recent blocks
           </p>

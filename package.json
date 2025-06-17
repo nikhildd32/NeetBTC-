@@ -1,13 +1,38 @@
 {
-  "name": "vite-react-typescript-starter",
-  "private": true,
-  "version": "0.0.0",
+  "name": "neetbtc",
+  "description": "Real-time Bitcoin dashboard with mempool tracking, fee estimation, and news aggregation",
+  "version": "1.0.0",
   "type": "module",
+  "keywords": [
+    "bitcoin",
+    "mempool",
+    "fees",
+    "news",
+    "dashboard",
+    "cryptocurrency",
+    "blockchain",
+    "react",
+    "typescript"
+  ],
+  "author": {
+    "name": "NeetBTC Team",
+    "url": "https://github.com/yourusername/neetbtc"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/neetbtc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/neetbtc/issues"
+  },
+  "homepage": "https://neetbtc.com",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.10",
@@ -42,5 +67,8 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

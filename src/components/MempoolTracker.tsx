@@ -84,20 +84,20 @@ const ShortcutsDropdown = () => {
     { key: 'N', description: 'News' },
     { key: '/', description: 'Search' },
     { key: 'R', description: 'Refresh' },
-    { key: '?', description: 'Show All Shortcuts' }
+    { key: '?', description: 'All Shortcuts' }
   ];
 
   return (
     <div className="relative">
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-2 py-1 bg-purple-900/20 backdrop-blur-sm rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 text-xs"
+        className="flex items-center gap-1 px-2 py-1 bg-black/10 backdrop-blur-sm rounded-md border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 text-xs opacity-50 hover:opacity-100"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Keyboard shortcuts"
       >
         <Keyboard className="h-3 w-3 text-purple-400" />
-        <span className="text-purple-300">Shortcuts</span>
+        <span className="text-purple-300 text-xs">Shortcuts</span>
         <ChevronDown className={`h-3 w-3 text-purple-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </motion.button>
 
@@ -116,15 +116,12 @@ const ShortcutsDropdown = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-full right-0 mt-2 w-48 bg-purple-900/90 backdrop-blur-md border border-purple-500/30 rounded-lg shadow-xl z-50"
+              className="absolute top-full left-0 mt-2 w-44 bg-black/95 backdrop-blur-md border border-purple-500/30 rounded-lg shadow-xl z-50"
             >
               <div className="p-3">
-                <div className="text-xs font-medium text-purple-300 mb-2 border-b border-purple-500/20 pb-2">
-                  Keyboard Shortcuts
-                </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {shortcuts.map((shortcut, index) => (
-                    <div key={index} className="flex justify-between items-center py-1">
+                    <div key={index} className="flex justify-between items-center py-1 px-2 rounded hover:bg-purple-500/20 transition-colors">
                       <span className="text-xs text-gray-300">{shortcut.description}</span>
                       <kbd className="px-1.5 py-0.5 bg-purple-800/50 rounded text-purple-300 text-xs font-mono">
                         {shortcut.key}
@@ -133,9 +130,7 @@ const ShortcutsDropdown = () => {
                   ))}
                 </div>
                 <div className="mt-2 pt-2 border-t border-purple-500/20">
-                  <div className="text-xs text-gray-500 text-center">
-                    Press <kbd className="px-1 py-0.5 bg-purple-800/50 rounded text-purple-400 font-mono">?</kbd> for all shortcuts
-                  </div>
+                  <p className="text-xs text-gray-500 text-center">Press ? for all shortcuts</p>
                 </div>
               </div>
             </motion.div>
@@ -446,6 +441,7 @@ export const MempoolTracker = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-red-900/20 border border-red-500/30 text-red-400 p-4 rounded-xl mb-8 backdrop-blur-sm"
+            role="alert"
           >
             {error}
           </motion.div>

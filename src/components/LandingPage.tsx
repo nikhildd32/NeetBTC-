@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Bitcoin, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
+import { Activity, Newspaper, Github, Code2, Globe, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 
@@ -243,7 +243,7 @@ export const LandingPage = () => {
               delay={0}
             />
             <QuickAccessButton
-              icon={<Bitcoin className="h-8 w-8" />}
+              icon={<BitcoinLogo size={32} />}
               title="Fees"
               description="Smart fee estimation"
               onClick={() => navigate('/fees')}
@@ -373,7 +373,7 @@ export const LandingPage = () => {
             />
             <FAQItem
               question="Explore"
-              answer="NeetBTC features advanced capabilities including AI-powered fee predictions using machine learning algorithms, comprehensive accessibility support with screen reader compatibility, keyboard shortcuts for power users (press ? to see all shortcuts), loading skeletons for better perceived performance, and robust error handling to ensure a smooth user experience."
+              answer="NeetBTC features advanced capabilities including smart fee predictions using advanced algorithms, comprehensive accessibility support with screen reader compatibility, keyboard shortcuts for power users (press ? to see all shortcuts), loading skeletons for better perceived performance, and robust error handling to ensure a smooth user experience."
               delay={0.3}
             />
           </motion.div>

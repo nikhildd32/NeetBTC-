@@ -7,7 +7,7 @@ interface KeyboardShortcut {
   altKey?: boolean;
   shiftKey?: boolean;
   metaKey?: boolean;
-  action: () => void;
+  action: (event?: KeyboardEvent) => void;
   description: string;
 }
 
@@ -76,14 +76,6 @@ export const useKeyboardShortcuts = () => {
         }
       },
       description: 'Close/Escape'
-    },
-    {
-      key: '?',
-      shiftKey: true,
-      action: () => {
-        showKeyboardShortcuts();
-      },
-      description: 'Show Keyboard Shortcuts (?)'
     }
   ];
 
@@ -98,6 +90,13 @@ export const useKeyboardShortcuts = () => {
       }
     }
 
+    // Handle ? key specifically (shift + /)
+    if (event.key === '?' && event.shiftKey) {
+      event.preventDefault();
+      showKeyboardShortcuts();
+      return;
+    }
+
     const shortcut = shortcuts.find(s => 
       s.key.toLowerCase() === event.key.toLowerCase() &&
       !!s.ctrlKey === event.ctrlKey &&
@@ -110,7 +109,7 @@ export const useKeyboardShortcuts = () => {
       event.preventDefault();
       shortcut.action(event);
     }
-  }, [shortcuts]);
+  }, [shortcuts, navigate]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);

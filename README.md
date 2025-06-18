@@ -1,33 +1,4 @@
-# 🚀 NeetBTC - Real-time Bitcoin Dashboard
 
-> **All-in-one Bitcoin dashboard with real-time mempool data, smart fee estimation, and latest Bitcoin news**
-
-## Features
-
-### 🔄 Real-time Mempool Tracker
-- Live unconfirmed transaction monitoring
-- Interactive block visualization
-- Historical mempool data comparison
-- Transaction search functionality
-
-### ⚡ Smart Fee Estimator
-- Real-time fee recommendations
-- Multiple priority levels (Priority, Standard, Economic, Low)
-- Cost calculations in BTC, USD, and satoshis
-- Network congestion analysis
-
-### 📰 Bitcoin News Aggregator
-- Live news from trusted Bitcoin sources
-- Bitcoin-focused content filtering
-- Real-time updates every hour
-- Clean, readable article cards
-
-### 🎯 Additional Features
-- **Keyboard Shortcuts** - Navigate quickly with hotkeys (press `?` to see all)
-- **Responsive Design** - Perfect on mobile, tablet, and desktop
-- **Accessibility** - Screen reader support and keyboard navigation
-- **Performance** - Loading skeletons and optimized animations
-- **Error Handling** - Graceful error boundaries and fallbacks
 
 ## 🚀 Quick Start
 
@@ -120,11 +91,6 @@ For more details, see our [Contributing Guidelines](CONTRIBUTING.md).
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- **Mempool.space** - For providing excellent Bitcoin network APIs
-- **Bitcoin Community** - For inspiration and feedback
-- **Open Source Contributors** - For making this project possible
 
 ## 📞 Support
 
